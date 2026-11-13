@@ -1,0 +1,80 @@
+﻿@model QuanLiDienThoaiDD.Models.GioHangTam
+@{
+    ViewBag.Title = "Thanh toán";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h3 class="my-3">Thanh toán khi nhận hàng (COD)</h3>
+
+<div class="row g-3">
+
+    <!-- Bên trái: thông tin người nhận -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Thông tin người nhận</h5>
+
+                @if (ViewBag.Loi != null)
+                {
+                    <div class="alert alert-danger">@ViewBag.Loi</div>
+                }
+
+                @using (Html.BeginForm("DatHang", "DatHang", FormMethod.Post))
+                {
+                    <div class="mb-3">
+                        <label class="form-label">Họ tên người nhận</label>
+                        <input type="text" name="txtTen" class="form-control" value="@Request.Form["txtTen"]" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <input type="text" name="txtSDT" class="form-control" value="@Request.Form["txtSDT"]" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ giao hàng</label>
+                        <input type="text" name="txtDiaChi" class="form-control" value="@Request.Form["txtDiaChi"]" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ghi chú</label>
+                        <input type="text" name="txtGhiChu" class="form-control" value="@Request.Form["txtGhiChu"]" />
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Đặt hàng</button>
+                    @Html.ActionLink("Quay lại giỏ hàng", "XemGioHang", "GioHang", null, new { @class = "btn btn-outline-secondary" })
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Bên phải: đơn hàng của bạn -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Đơn hàng của bạn</h5>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>SL</th>
+                                <th>Thành tiền</th>
+                            </tr>
+                        </thead>
+                        @foreach (var item in Model.lst)
+                        {
+                            <tr>
+                                <td>@item.TenSanPham <span class="text-muted small">(@item.MauSac @item.BoNho)</span></td>
+                                <td>@item.SoLuong</td>
+                                <td>@string.Format("{0:N0}", item.ThanhTien) đ</td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <b>Tổng cộng</b>
+                    <b class="text-danger fs-5">@string.Format("{0:N0}", Model.TongThanhTien()) đ</b>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

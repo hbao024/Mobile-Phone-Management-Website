@@ -1,0 +1,8 @@
+﻿@model List<QuanLiDienThoaiDD.Models.LOAISANPHAM>
+
+<div class="list-group list-group-flush">
+    @foreach (var lsp in Model)
+    {
+        @Html.ActionLink(lsp.TenLoai, "SanPhamTheoLoai", "LoaiSanPham", new { maLoai = lsp.MaLoai }, new { @class = "list-group-item list-group-item-action py-2" })
+    }
+</div>

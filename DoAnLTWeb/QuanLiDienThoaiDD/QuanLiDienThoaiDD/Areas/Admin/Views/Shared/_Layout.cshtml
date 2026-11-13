@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewBag.Title - MobileHub Admin</title>
+    @Styles.Render("~/Content/css")
+</head>
+<body class="admin-body">
+    <div class="admin-shell">
+        <aside class="admin-sidebar">
+            <a class="admin-logo" href="@Url.Action("Index", "Dashboard", new { area = "Admin" })">
+                <span class="brand-mark">M</span>
+                <span>MobileHub</span>
+            </a>
+            <div class="sidebar-label">QUẢN TRỊ</div>
+            <nav class="admin-nav">
+                <a class="admin-nav-link active" href="@Url.Action("Index", "Dashboard", new { area = "Admin" })">
+                    <span class="nav-icon">⌂</span> Tổng quan
+                </a>
+                <span class="admin-nav-link disabled"><span class="nav-icon">▣</span> Sản phẩm</span>
+                <span class="admin-nav-link disabled"><span class="nav-icon">▤</span> Đơn hàng</span>
+                <span class="admin-nav-link disabled"><span class="nav-icon">▥</span> Kho hàng</span>
+                @if (User.IsInRole("ADMIN"))
+                {
+                    <span class="admin-nav-link disabled"><span class="nav-icon">♙</span> Tài khoản</span>
+                }
+            </nav>
+            <div class="sidebar-bottom">
+                @Html.ActionLink("Về trang bán hàng", "Index", "Home", new { area = "" }, new { @class = "sidebar-back-link" })
+            </div>
+        </aside>
+
+        <div class="admin-main">
+            <header class="admin-topbar">
+                <div>
+                    <div class="topbar-eyebrow">HỆ THỐNG QUẢN LÝ</div>
+                    <div class="topbar-title">@ViewBag.Title</div>
+                </div>
+                <div class="topbar-user">
+                    <div class="user-avatar">@(User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpperInvariant() : "U")</div>
+                    <div class="user-info">
+                        <strong>@User.Identity.Name</strong>
+                        <small>@(User.IsInRole("ADMIN") ? "Quản trị viên" : "Nhân viên")</small>
+                    </div>
+                    @using (Html.BeginForm("Logout", "Account", new { area = "" }, FormMethod.Post, new { @class = "logout-form", onsubmit = "return confirm('Bạn có chắc muốn đăng xuất không?');" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-link logout-button">Đăng xuất</button>
+                    }
+                </div>
+            </header>
+
+            <main class="admin-content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,11 @@
+﻿@{
+    ViewBag.Title = "Đặt hàng thành công";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="text-center my-5">
+    <h3 class="text-success">Đặt hàng thành công!</h3>
+    <p>Mã đơn hàng của bạn: <b>@ViewBag.MaDonHang</b></p>
+    <p>Bạn thanh toán khi nhận hàng.</p>
+    @Html.ActionLink("Tiếp tục mua sắm", "Index", "SanPham", null, new { @class = "btn btn-primary" })
+</div>

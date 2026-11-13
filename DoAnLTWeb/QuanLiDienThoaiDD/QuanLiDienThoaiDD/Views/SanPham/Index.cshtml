@@ -1,0 +1,26 @@
+﻿@model List<QuanLiDienThoaiDD.Models.SANPHAM>
+@{
+    ViewBag.Title = "Sản phẩm";
+    Layout = "~/Views/Shared/UserLayout.cshtml";
+}
+
+<h4 class="mb-3">Tất cả sản phẩm</h4>
+
+<div class="row g-3">
+    @foreach (var sp in Model)
+    {
+        <div class="col-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="p-3 text-center">
+                    <img src="@Url.Content("~" + sp.BIENSANPHAMs.First().HinhAnhUrl)"
+                         class="w-100" style="height:150px; object-fit:contain;" />
+                </div>
+                <div class="card-body d-flex flex-column text-center pt-0">
+                    <h6 class="card-title fw-bold">@sp.TenSanPham</h6>
+                    <p class="text-danger fw-bold mb-3">@string.Format("{0:N0}", sp.BIENSANPHAMs.Min(b => b.GiaBan)) đ</p>
+                    @Html.ActionLink("Chi tiết", "XemChiTiet", "SanPham", new { id = sp.MaSanPham }, new { @class = "btn btn-warning btn-sm mt-auto" })
+                </div>
+            </div>
+        </div>
+    }
+</div>

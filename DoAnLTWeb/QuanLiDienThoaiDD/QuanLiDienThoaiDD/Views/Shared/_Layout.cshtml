@@ -1,0 +1,173 @@
+@{
+    var ghTam = Session["gh"] as QuanLiDienThoaiDD.Models.GioHangTam;
+    int soLuongGio = ghTam == null ? 0 : ghTam.TongSLHang();
+
+    string ctrl = (ViewContext.RouteData.Values["controller"] as string) ?? "";
+    bool laTrangChu = ctrl == "Home";
+    bool laSanPham = ctrl == "SanPham" || ctrl == "LoaiSanPham";
+    bool laDonHang = ctrl == "LichSuMuaHang";
+    bool laTaiKhoan = ctrl == "Account" || ctrl == "KhachHang";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>@ViewBag.Title - MobileHub</title>
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body>
+
+    <nav class="navbar mobile-navbar d-none d-sm-block">
+        <div class="container d-flex align-items-center">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="@Url.Action("Index", "Home")">
+                <span class="brand-mark">M</span>
+                <span>MobileHub</span>
+            </a>
+
+            <ul class="navbar-nav flex-row flex-grow-1 ms-3">
+                <li>@Html.ActionLink("Trang chủ", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+                <li>@Html.ActionLink("Sản phẩm", "Index", "SanPham", new { area = "" }, new { @class = "nav-link" })</li>
+                <li><span class="nav-link text-muted">Giới thiệu</span></li>
+            </ul>
+
+            <form class="d-flex me-3" action="@Url.Action("TimKiem", "SanPham", new { area = "" })" method="get">
+                <input class="form-control form-control-sm me-1" type="search" name="keyword"
+                       value="@Request.QueryString["keyword"]" placeholder="Tìm điện thoại..." />
+                <button class="btn btn-sm btn-warning" type="submit">Tìm</button>
+            </form>
+
+            <div class="d-flex align-items-center gap-2 me-3">
+                @Html.Action("_CartSummary", "GioHang", new { area = "" })
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                @if (User.Identity.IsAuthenticated)
+                {
+                    if (User.IsInRole("ADMIN"))
+                    {
+                        @Html.ActionLink("Quản trị", "Index", "Dashboard", new { area = "Admin" }, new { @class = "btn btn-sm btn-light" })
+                    }
+                    @Html.ActionLink("Đơn hàng của tôi", "LichSu", "LichSuMuaHang", new { area = "" }, new { @class = "btn btn-sm btn-outline-light" })
+
+                    <div class="d-flex align-items-center gap-2 ps-3 border-start border-secondary">
+                        <span class="rounded-circle bg-warning text-dark fw-bold d-inline-flex align-items-center justify-content-center" style="width:32px; height:32px;">
+                            @User.Identity.Name.Substring(0, 1).ToUpper()
+                        </span>
+                        <span class="navbar-user">@User.Identity.Name</span>
+                    </div>
+
+                    using (Html.BeginForm("Logout", "Account", new { area = "" }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Bạn có chắc muốn đăng xuất không?');" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-outline-light">Đăng xuất</button>
+                    }
+                }
+                else
+                {
+                    @Html.ActionLink("Đăng nhập", "Login", "Account", new { area = "" }, new { @class = "btn btn-sm btn-light" })
+                    @Html.ActionLink("Đăng ký", "DangKy", "KhachHang", new { area = "" }, new { @class = "btn btn-sm btn-outline-light" })
+                }
+            </div>
+        </div>
+    </nav>
+
+    <header class="m-topbar d-sm-none">
+        <a href="@Url.Action("Index", "Home")" class="text-decoration-none">
+            <span class="brand-mark">M</span>
+        </a>
+
+        <form action="@Url.Action("TimKiem", "SanPham", new { area = "" })" method="get">
+            <input class="form-control form-control-sm" type="search" name="keyword"
+                   value="@Request.QueryString["keyword"]" placeholder="Bạn muốn tìm gì?" />
+            <button class="btn btn-sm btn-warning" type="submit">Tìm</button>
+        </form>
+
+        <a class="m-cart" href="@Url.Action("XemGioHang", "GioHang", new { area = "" })" aria-label="Giỏ hàng">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5" /><circle cx="18" cy="20" r="1.5" /><path d="M2 3h3l2.6 12.4a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L21 7H6" /></svg>
+            @if (soLuongGio > 0)
+            {
+                <span class="m-badge">@soLuongGio</span>
+            }
+        </a>
+    </header>
+
+    <div class="container body-content">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show flash-message" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+            </div>
+        }
+        @RenderBody()
+        <footer>
+            <p>&copy; @DateTime.Now.Year - MobileHub. Hệ thống quản lý điện thoại di động.</p>
+        </footer>
+    </div>
+
+    <nav class="m-bottombar d-sm-none">
+        <a class="m-tab @(laTrangChu ? "active" : "")" href="@Url.Action("Index", "Home", new { area = "" })">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" /></svg>
+            Trang chủ
+        </a>
+        <a class="m-tab @(laSanPham ? "active" : "")" href="@Url.Action("Index", "SanPham", new { area = "" })">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
+            Sản phẩm
+        </a>
+        <a class="m-tab @(laDonHang ? "active" : "")" href="@Url.Action("LichSu", "LichSuMuaHang", new { area = "" })">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z" /><path d="M9 8h6M9 12h6" /></svg>
+            Đơn hàng
+        </a>
+        <button type="button" class="m-tab @(laTaiKhoan ? "active" : "")" data-bs-toggle="offcanvas" data-bs-target="#taiKhoanSheet" aria-controls="taiKhoanSheet">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 4-6 8-6s8 2 8 6" /></svg>
+            Tài khoản
+        </button>
+    </nav>
+
+    <div class="offcanvas offcanvas-bottom d-sm-none" tabindex="-1" id="taiKhoanSheet" style="height:auto; border-radius:16px 16px 0 0;">
+        <div class="offcanvas-header">
+            @if (User.Identity.IsAuthenticated)
+            {
+                <div class="d-flex align-items-center gap-2">
+                    <span class="rounded-circle bg-warning text-dark fw-bold d-inline-flex align-items-center justify-content-center" style="width:36px; height:36px;">
+                        @User.Identity.Name.Substring(0, 1).ToUpper()
+                    </span>
+                    <b>@User.Identity.Name</b>
+                </div>
+            }
+            else
+            {
+                <b>Tài khoản</b>
+            }
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Đóng"></button>
+        </div>
+        <div class="offcanvas-body d-grid gap-2 pt-0 pb-4">
+            @if (User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole("ADMIN"))
+                {
+                    @Html.ActionLink("Quản trị", "Index", "Dashboard", new { area = "Admin" }, new { @class = "btn btn-light border" })
+                }
+                @Html.ActionLink("Đơn hàng của tôi", "LichSu", "LichSuMuaHang", new { area = "" }, new { @class = "btn btn-light border" })
+
+                using (Html.BeginForm("Logout", "Account", new { area = "" }, FormMethod.Post, new { onsubmit = "return confirm('Bạn có chắc muốn đăng xuất không?');" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger w-100">Đăng xuất</button>
+                }
+            }
+            else
+            {
+                @Html.ActionLink("Đăng nhập", "Login", "Account", new { area = "" }, new { @class = "btn btn-warning" })
+                @Html.ActionLink("Đăng ký", "DangKy", "KhachHang", new { area = "" }, new { @class = "btn btn-outline-dark" })
+            }
+        </div>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

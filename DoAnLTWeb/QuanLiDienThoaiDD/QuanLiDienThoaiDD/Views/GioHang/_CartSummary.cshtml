@@ -1,0 +1,5 @@
+﻿
+@{
+    int soLuong = ViewBag.SoLuongGioHang ?? 0;
+}
+<a class="btn btn-sm btn-outline-light" href="@Url.Action("XemGioHang", "GioHang", new { area = "" })">🛒 Giỏ hàng (@soLuong)</a>

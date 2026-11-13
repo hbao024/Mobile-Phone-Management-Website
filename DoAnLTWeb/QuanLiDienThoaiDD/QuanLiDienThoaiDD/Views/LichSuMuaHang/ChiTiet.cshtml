@@ -1,0 +1,65 @@
+﻿@model QuanLiDienThoaiDD.Models.DONHANG
+@{
+    ViewBag.Title = "Chi tiết đơn hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string mau = "bg-secondary";
+    if (Model.TrangThaiDonHang == "CHO_XAC_NHAN") { mau = "bg-warning text-dark"; }
+    if (Model.TrangThaiDonHang == "DA_GIAO") { mau = "bg-success"; }
+    if (Model.TrangThaiDonHang == "DA_HUY") { mau = "bg-danger"; }
+}
+
+<h3 class="my-3">Đơn hàng @Model.MaDonHang <span class="badge @mau fs-6">@Model.TrangThaiDonHang.Replace("_", " ")</span></h3>
+
+<div class="row g-3">
+
+    <!-- Bên trái: thông tin đơn hàng -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Thông tin giao hàng</h5>
+                <p class="mb-2"><b>Người nhận:</b> @Model.TenNguoiNhan</p>
+                <p class="mb-2"><b>Số điện thoại:</b> @Model.SoDienThoaiNhan</p>
+                <p class="mb-2"><b>Địa chỉ:</b> @Model.DiaChiGiaoHang</p>
+                <p class="mb-2"><b>Ghi chú:</b> @Model.GhiChu</p>
+                <hr />
+                <p class="mb-2"><b>Ngày đặt:</b> @Model.NgayDat.ToString("dd/MM/yyyy HH:mm")</p>
+                <p class="mb-0"><b>Thanh toán:</b> @Model.PhuongThucThanhToan - @Model.TrangThaiThanhToan.Replace("_", " ")</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bên phải: các sản phẩm đã đặt -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Đơn giá</th>
+                            <th>SL</th>
+                            <th>Thành tiền</th>
+                        </tr>
+                    </thead>
+                    @foreach (var ct in Model.CHITIETDONHANGs)
+                    {
+                        <tr>
+                            <td>@ct.TenSanPham</td>
+                            <td>@string.Format("{0:N0}", ct.DonGia) đ</td>
+                            <td>@ct.SoLuong</td>
+                            <td>@string.Format("{0:N0}", ct.ThanhTien) đ</td>
+                        </tr>
+                    }
+                    <tr>
+                        <td colspan="3" class="text-end"><b>Tổng cộng</b></td>
+                        <td class="text-danger fw-bold fs-5">@string.Format("{0:N0}", Model.TongTien) đ</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        @Html.ActionLink("Quay lại lịch sử", "LichSu", "LichSuMuaHang", null, new { @class = "btn btn-outline-secondary mt-3" })
+    </div>
+
+</div>

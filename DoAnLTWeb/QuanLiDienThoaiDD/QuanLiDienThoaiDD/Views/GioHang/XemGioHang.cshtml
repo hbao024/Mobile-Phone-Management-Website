@@ -1,0 +1,99 @@
+﻿@model QuanLiDienThoaiDD.Models.GioHangTam
+@{
+    ViewBag.Title = "Giỏ hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h3 class="my-3">Giỏ hàng của bạn</h3>
+
+@if (Model.SoMatHang() == 0)
+{
+    <div class="text-center py-5">
+        <p class="fs-5 text-muted">Giỏ hàng đang trống.</p>
+        @Html.ActionLink("Tiếp tục mua sắm", "Index", "SanPham", null, new { @class = "btn btn-primary" })
+    </div>
+}
+else
+{
+    <div class="row g-3">
+
+        <!-- Bên trái: danh sách sản phẩm trong giỏ -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>Đơn giá</th>
+                                <th>Số lượng</th>
+                                <th>Thành tiền</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        @foreach (var item in Model.lst)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="@Url.Content("~" + item.HinhAnhUrl)" class="rounded bg-light p-1"
+                                             style="width:80px; height:80px; object-fit:contain;" />
+                                        <div>
+                                            <div class="fw-bold">@item.TenSanPham</div>
+                                            <div class="text-muted small">Màu: @(item.MauSac + (string.IsNullOrEmpty(item.BoNho) ? "" : " · " + item.BoNho))</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@string.Format("{0:N0}", item.DonGia) đ</td>
+                                <td>
+                                    @using (Html.BeginForm("CapNhat", "GioHang", FormMethod.Post, new { @class = "d-flex gap-1" }))
+                                    {
+                                        <input type="hidden" name="maBienSanPham" value="@item.MaBienSanPham" />
+                                        <input type="number" name="soLuong" value="@item.SoLuong" min="1" class="form-control form-control-sm" style="width:70px;" />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Sửa</button>
+                                    }
+                                </td>
+                                <td class="text-danger fw-bold">@string.Format("{0:N0}", item.ThanhTien) đ</td>
+                                <td>
+                                    @Html.ActionLink("Xóa", "XoaMatHang", "GioHang", new { maBienSanPham = item.MaBienSanPham }, new { @class = "btn btn-sm btn-outline-danger", onclick = "return confirm('Xóa sản phẩm này khỏi giỏ hàng?');" })
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bên phải: tóm tắt đơn hàng -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Tóm tắt đơn hàng</h5>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Số lượng sản phẩm</span>
+                        <span>@Model.TongSLHang()</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tạm tính</span>
+                        <span>@string.Format("{0:N0}", Model.TongThanhTien()) đ</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Phí vận chuyển</span>
+                        <span>Miễn phí</span>
+                    </div>
+                    <hr />
+                    <div class="d-flex justify-content-between mb-3">
+                        <b>Tổng cộng</b>
+                        <b class="text-danger fs-5">@string.Format("{0:N0}", Model.TongThanhTien()) đ</b>
+                    </div>
+
+                    @Html.ActionLink("Thanh toán", "ThanhToan", "DatHang", null, new { @class = "btn btn-success w-100" })
+                    @Html.ActionLink("Tiếp tục mua sắm", "Index", "SanPham", null, new { @class = "btn btn-outline-secondary w-100 mt-2" })
+                    @Html.ActionLink("Xóa toàn bộ giỏ hàng", "XoaGioHang", "GioHang", null, new { @class = "btn btn-link text-danger btn-sm w-100 mt-2", onclick = "return confirm('Xóa toàn bộ giỏ hàng?');" })
+                </div>
+            </div>
+        </div>
+
+    </div>
+}
