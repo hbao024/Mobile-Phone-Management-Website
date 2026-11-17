@@ -1,0 +1,198 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.CustomerDetailViewModel
+@using QuanLiDienThoaiDD.Areas.Admin.ViewModels
+@{
+    ViewBag.Title = "Hồ sơ khách hàng " + Model.TenKH;
+}
+
+<div class="dashboard-heading">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <a href="@Url.Action("Index", "Customers", new { area = "Admin" })" class="btn btn-sm btn-outline-secondary">← Danh sách khách hàng</a>
+            <span class="status-pill @(Model.TrangThai ? "status-da_giao" : "status-da_huy")">
+                @(Model.TrangThai ? "Đang hoạt động" : "Đã khóa")
+            </span>
+        </div>
+        <h1>@Model.TenKH (@Model.MaKH)</h1>
+        <p class="text-muted mb-0">Ngày tham gia: @Model.NgayThamGia.ToString("dd/MM/yyyy HH:mm")</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="@Url.Action("Edit", "Customers", new { area = "Admin", id = Model.MaKH })" class="btn btn-outline-primary">✎ Chỉnh sửa thông tin</a>
+        @using (Html.BeginForm("ToggleStatus", "Customers", new { area = "Admin", id = Model.MaKH }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Bạn có chắc muốn thay đổi trạng thái hoạt động của khách hàng này?');" }))
+        {
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn @(Model.TrangThai ? "btn-outline-danger" : "btn-success")">
+                @(Model.TrangThai ? "🔒 Khóa khách hàng" : "🔓 Mở khóa khách hàng")
+            </button>
+        }
+    </div>
+</div>
+
+<div class="stats-grid mb-4">
+    <div class="stat-card stat-blue">
+        <div class="stat-icon">#</div>
+        <div><span>Tổng số đơn hàng</span><strong>@Model.TongSoDonHang đơn</strong></div>
+    </div>
+    <div class="stat-card stat-green">
+        <div class="stat-icon">✓</div>
+        <div><span>Đơn đã giao thành công</span><strong>@Model.SoDonHoanThanh đơn</strong></div>
+    </div>
+    <div class="stat-card stat-orange">
+        <div class="stat-icon">→</div>
+        <div><span>Đơn đang xử lý / Đã hủy</span><strong>@Model.SoDonDangXuLy xử lý / @Model.SoDonDaHuy hủy</strong></div>
+    </div>
+    <div class="stat-card stat-purple">
+        <div class="stat-icon">$</div>
+        <div><span>Tổng chi tiêu hợp lệ</span><strong>@Model.TongChiTieuHopLe.ToString("N0") đ</strong></div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Thông tin cá nhân</h2>
+                    <p>Chi tiết liên hệ &amp; tài khoản</p>
+                </div>
+            </div>
+            <div class="p-3 small">
+                <div class="mb-2">
+                    <span class="text-muted d-block">Mã khách hàng:</span>
+                    <strong>@Model.MaKH</strong>
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted d-block">Họ và tên:</span>
+                    <strong>@Model.TenKH</strong>
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted d-block">Số điện thoại:</span>
+                    <strong>@Model.DienThoai</strong>
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted d-block">Email:</span>
+                    <strong>@(string.IsNullOrWhiteSpace(Model.Email) ? "Chưa cập nhật" : Model.Email)</strong>
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted d-block">Địa chỉ:</span>
+                    <strong>@(string.IsNullOrWhiteSpace(Model.DiaChi) ? "Chưa cập nhật" : Model.DiaChi)</strong>
+                </div>
+                <hr />
+                <div class="mb-2">
+                    <span class="text-muted d-block">Tài khoản đăng nhập:</span>
+                    @if (!string.IsNullOrWhiteSpace(Model.TenDangNhap))
+                    {
+                        <strong class="text-primary">@Model.TenDangNhap</strong>
+                    }
+                    else
+                    {
+                        <span class="text-muted">Chưa liên kết tài khoản</span>
+                    }
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-8">
+        <section class="dashboard-panel mb-4">
+            <div class="panel-heading">
+                <div>
+                    <h2>Lịch sử đặt hàng của khách</h2>
+                    <p>Toàn bộ đơn hàng gắn với mã khách hàng @Model.MaKH</p>
+                </div>
+                <span class="panel-badge">@Model.Orders.Count đơn hàng</span>
+            </div>
+            @if (Model.Orders.Count == 0)
+            {
+                <div class="empty-panel">Khách hàng này chưa có đơn hàng nào.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table dashboard-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Mã đơn</th>
+                                <th>Ngày đặt</th>
+                                <th>SL SP</th>
+                                <th class="text-end">Tổng tiền</th>
+                                <th>Thanh toán</th>
+                                <th>Trạng thái</th>
+                                <th class="text-end">Xem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var o in Model.Orders)
+                            {
+                                <tr>
+                                    <td>
+                                        <a href="@Url.Action("Details", "Orders", new { area = "Admin", id = o.MaDonHang })" class="fw-bold text-decoration-none">
+                                            @o.MaDonHang
+                                        </a>
+                                    </td>
+                                    <td>@o.NgayDat.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@o.TongSoSanPham SP</td>
+                                    <td class="text-end fw-bold">@o.TongTien.ToString("N0") đ</td>
+                                    <td>
+                                        <span class="status-pill @AdminStatusHelper.GetPaymentStatusBadgeClass(o.TrangThaiThanhToan)">
+                                            @AdminStatusHelper.GetPaymentStatusLabel(o.TrangThaiThanhToan)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="status-pill @AdminStatusHelper.GetOrderStatusBadgeClass(o.TrangThaiDonHang)">
+                                            @AdminStatusHelper.GetOrderStatusLabel(o.TrangThaiDonHang)
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="@Url.Action("Details", "Orders", new { area = "Admin", id = o.MaDonHang })" class="btn btn-sm btn-outline-primary">Chi tiết</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Đánh giá sản phẩm</h2>
+                    <p>Nhận xét của khách hàng sau khi mua hàng</p>
+                </div>
+                <span class="panel-badge">@Model.Reviews.Count đánh giá</span>
+            </div>
+            @if (Model.Reviews.Count == 0)
+            {
+                <div class="empty-panel">Chưa có đánh giá sản phẩm nào.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table dashboard-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Sản phẩm</th>
+                                <th>Đơn hàng</th>
+                                <th>Số sao</th>
+                                <th>Nội dung đánh giá</th>
+                                <th>Ngày</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in Model.Reviews)
+                            {
+                                <tr>
+                                    <td><strong>@r.TenSanPham</strong><small>@r.SKU</small></td>
+                                    <td>@r.MaDonHang</td>
+                                    <td class="text-warning fw-bold">@(new string('★', r.SoSao))</td>
+                                    <td>@r.NoiDung</td>
+                                    <td>@r.NgayDanhGia.ToString("dd/MM/yyyy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    </div>
+</div>

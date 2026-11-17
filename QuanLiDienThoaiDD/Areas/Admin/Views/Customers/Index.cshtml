@@ -1,0 +1,141 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.CustomerIndexViewModel
+@{
+    ViewBag.Title = "Quản lý khách hàng";
+}
+
+<div class="dashboard-heading">
+    <div>
+        <h1>Quản lý khách hàng</h1>
+        <p class="text-muted mb-0">Tra cứu hồ sơ khách hàng, tài khoản liên kết, lịch sử mua sắm và trạng thái hoạt động.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="@Url.Action("Create", "Customers", new { area = "Admin" })" class="btn btn-primary">+ Thêm khách hàng mới</a>
+    </div>
+</div>
+
+<div class="stats-grid mb-4">
+    <div class="stat-card stat-blue">
+        <div class="stat-icon">☺</div>
+        <div><span>Tổng số khách hàng</span><strong>@Model.TotalCustomers khách hàng</strong></div>
+    </div>
+    <div class="stat-card stat-green">
+        <div class="stat-icon">✓</div>
+        <div><span>Đang hoạt động</span><strong>@Model.ActiveCustomers khách hàng</strong></div>
+    </div>
+    <div class="stat-card stat-purple">
+        <div class="stat-icon">🔑</div>
+        <div><span>Có tài khoản web</span><strong>@Model.LinkedAccountCustomers tài khoản</strong></div>
+    </div>
+    <div class="stat-card stat-orange">
+        <div class="stat-icon">$</div>
+        <div><span>Tổng chi tiêu khách hàng</span><strong>@Model.TotalCustomerSpending.ToString("N0") đ</strong></div>
+    </div>
+</div>
+
+<section class="dashboard-panel">
+    <div class="p-3 border-bottom bg-light rounded-top">
+        @using (Html.BeginForm("Index", "Customers", new { area = "Admin" }, FormMethod.Get, new { @class = "row g-2 align-items-end admin-filter-form" }))
+        {
+            <div class="col-md-5">
+                <label class="form-label small fw-bold text-muted mb-1">Tìm kiếm khách hàng</label>
+                <input type="text" name="search" value="@Model.Search" class="form-control form-control-sm" placeholder="Mã KH, họ tên, số điện thoại, email, địa chỉ..." />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-muted mb-1">Trạng thái</label>
+                <select name="statusFilter" class="form-select form-select-sm">
+                    <option value="">-- Tất cả trạng thái --</option>
+                    <option value="active" @(Model.StatusFilter == "active" ? "selected" : "")>Đang hoạt động</option>
+                    <option value="locked" @(Model.StatusFilter == "locked" ? "selected" : "")>Đã khóa</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-muted mb-1">Loại khách hàng</label>
+                <select name="accountFilter" class="form-select form-select-sm">
+                    <option value="">-- Tất cả --</option>
+                    <option value="linked" @(Model.AccountFilter == "linked" ? "selected" : "")>Có tài khoản đăng nhập</option>
+                    <option value="guest" @(Model.AccountFilter == "guest" ? "selected" : "")>Khách hàng chưa liên kết TK</option>
+                </select>
+            </div>
+            <div class="col-md-1 d-flex gap-1">
+                <button type="submit" class="btn btn-sm btn-primary w-100">Lọc</button>
+                <a href="@Url.Action("Index", "Customers", new { area = "Admin" })" class="btn btn-sm btn-outline-secondary" title="Xóa lọc">↺</a>
+            </div>
+        }
+    </div>
+
+    <div class="panel-heading">
+        <div>
+            <h2>Danh sách khách hàng</h2>
+            <p>Thống kê số đơn hàng và tổng chi tiêu hợp lệ của từng khách hàng</p>
+        </div>
+        <span class="panel-badge">Trang @Model.CurrentPage / @Model.TotalPages</span>
+    </div>
+
+    @if (Model.Customers == null || Model.Customers.Count == 0)
+    {
+        <div class="empty-panel">Không tìm thấy khách hàng nào.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table dashboard-table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Mã KH</th>
+                        <th>Họ tên &amp; Tài khoản</th>
+                        <th>Liên hệ</th>
+                        <th>Địa chỉ</th>
+                        <th class="text-center">Số đơn</th>
+                        <th class="text-end">Tổng chi tiêu</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Customers)
+                    {
+                        <tr>
+                            <td>
+                                <a href="@Url.Action("Details", "Customers", new { area = "Admin", id = item.MaKH })" class="fw-bold text-decoration-none">
+                                    @item.MaKH
+                                </a>
+                                <small>@item.NgayThamGia.ToString("dd/MM/yyyy")</small>
+                            </td>
+                            <td>
+                                <strong>@item.TenKH</strong>
+                                @if (!string.IsNullOrWhiteSpace(item.TenDangNhap))
+                                {
+                                    <div class="small text-primary">TK: @item.TenDangNhap</div>
+                                }
+                                else
+                                {
+                                    <div class="small text-muted">Khách tại quầy</div>
+                                }
+                            </td>
+                            <td>
+                                <div><strong>@item.DienThoai</strong></div>
+                                <small class="text-muted">@(string.IsNullOrWhiteSpace(item.Email) ? "Chưa có email" : item.Email)</small>
+                            </td>
+                            <td class="small">@(string.IsNullOrWhiteSpace(item.DiaChi) ? "-" : item.DiaChi)</td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark border">@item.SoDonHang đơn (@item.SoDonThanhCong đã giao)</span>
+                            </td>
+                            <td class="text-end fw-bold text-primary">@item.TongChiTieu.ToString("N0") đ</td>
+                            <td>
+                                <span class="status-pill @(item.TrangThai ? "status-da_giao" : "status-da_huy")">
+                                    @(item.TrangThai ? "Hoạt động" : "Đã khóa")
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-1">
+                                    <a href="@Url.Action("Details", "Customers", new { area = "Admin", id = item.MaKH })" class="btn btn-sm btn-outline-primary">Hồ sơ</a>
+                                    <a href="@Url.Action("Edit", "Customers", new { area = "Admin", id = item.MaKH })" class="btn btn-sm btn-outline-secondary">Sửa</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

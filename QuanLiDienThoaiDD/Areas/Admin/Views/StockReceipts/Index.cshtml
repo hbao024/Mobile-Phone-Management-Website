@@ -1,0 +1,252 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.StockReceiptIndexViewModel
+@using QuanLiDienThoaiDD.Areas.Admin.ViewModels
+@{
+    ViewBag.Title = "Quản lý phiếu nhập & Tồn kho";
+}
+
+<div class="dashboard-heading">
+    <div>
+        <h1>Quản lý phiếu nhập &amp; Kho hàng</h1>
+        <p class="text-muted mb-0">Lập phiếu nhập từ nhà cung cấp, cập nhật số lượng tồn kho và theo dõi lịch sử biến động kho.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="@Url.Action("Create", "StockReceipts", new { area = "Admin" })" class="btn btn-primary">+ Lập phiếu nhập mới</a>
+    </div>
+</div>
+
+<div class="stats-grid mb-4">
+    <div class="stat-card stat-blue">
+        <div class="stat-icon">▥</div>
+        <div><span>Tổng phiếu nhập</span><strong>@Model.TotalReceipts phiếu (@Model.ImportedReceipts đã nhập)</strong></div>
+    </div>
+    <div class="stat-card stat-orange">
+        <div class="stat-icon">!</div>
+        <div><span>Phiếu chờ xử lý</span><strong>@Model.PendingReceipts phiếu</strong></div>
+    </div>
+    <div class="stat-card stat-purple">
+        <div class="stat-icon">$</div>
+        <div><span>Tổng giá trị nhập kho</span><strong>@Model.TotalImportAmount.ToString("N0") đ</strong></div>
+    </div>
+    <div class="stat-card stat-green">
+        <div class="stat-icon">✓</div>
+        <div><span>Tổng SP tồn kho hiện tại</span><strong>@Model.TotalUnitsInStock sản phẩm</strong></div>
+    </div>
+</div>
+
+<!-- Danh sách phiếu nhập -->
+<section class="dashboard-panel mb-4">
+    <div class="p-3 border-bottom bg-light rounded-top">
+        @using (Html.BeginForm("Index", "StockReceipts", new { area = "Admin" }, FormMethod.Get, new { @class = "row g-2 align-items-end admin-filter-form" }))
+        {
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-muted mb-1">Tìm kiếm</label>
+                <input type="text" name="search" value="@Model.Search" class="form-control form-control-sm" placeholder="Mã phiếu, nhà cung cấp, nhân viên..." />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-muted mb-1">Nhà cung cấp</label>
+                <select name="maNCC" class="form-select form-select-sm">
+                    <option value="">-- Tất cả nhà cung cấp --</option>
+                    @foreach (var ncc in Model.Suppliers)
+                    {
+                        <option value="@ncc.MaNCC" @(Model.MaNCC == ncc.MaNCC ? "selected" : "")>@ncc.TenNCC (@ncc.MaNCC)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-bold text-muted mb-1">Trạng thái</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">-- Tất cả --</option>
+                    @foreach (var st in AdminStatusHelper.ReceiptStatuses)
+                    {
+                        <option value="@st" @(Model.Status == st ? "selected" : "")>@AdminStatusHelper.GetReceiptStatusLabel(st)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-1">
+                <div class="w-50">
+                    <label class="form-label small fw-bold text-muted mb-1">Từ ngày</label>
+                    <input type="date" name="fromDate" value="@(Model.FromDate.HasValue ? Model.FromDate.Value.ToString("yyyy-MM-dd") : "")" class="form-control form-control-sm" />
+                </div>
+                <div class="w-50">
+                    <label class="form-label small fw-bold text-muted mb-1">Đến ngày</label>
+                    <input type="date" name="toDate" value="@(Model.ToDate.HasValue ? Model.ToDate.Value.ToString("yyyy-MM-dd") : "")" class="form-control form-control-sm" />
+                </div>
+            </div>
+            <div class="col-md-1 d-flex gap-1">
+                <button type="submit" class="btn btn-sm btn-primary w-100">Lọc</button>
+                <a href="@Url.Action("Index", "StockReceipts", new { area = "Admin" })" class="btn btn-sm btn-outline-secondary" title="Xóa bộ lọc">↺</a>
+            </div>
+        }
+    </div>
+
+    <div class="panel-heading">
+        <div>
+            <h2>Danh sách phiếu nhập hàng</h2>
+            <p>Các lô hàng nhập từ nhà cung cấp</p>
+        </div>
+        <span class="panel-badge">Trang @Model.CurrentPage / @Model.TotalPages</span>
+    </div>
+
+    @if (Model.Receipts == null || Model.Receipts.Count == 0)
+    {
+        <div class="empty-panel">Chưa có phiếu nhập nào phù hợp với bộ lọc.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table dashboard-table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Mã phiếu</th>
+                        <th>Nhà cung cấp</th>
+                        <th>Nhân viên lập</th>
+                        <th>Ngày nhập</th>
+                        <th class="text-center">Mặt hàng / Tổng SL</th>
+                        <th class="text-end">Tổng tiền nhập</th>
+                        <th>Trạng thái</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Receipts)
+                    {
+                        <tr>
+                            <td>
+                                <a href="@Url.Action("Details", "StockReceipts", new { area = "Admin", id = item.MaPhieuNhap })" class="fw-bold text-decoration-none">
+                                    @item.MaPhieuNhap
+                                </a>
+                                @if (!string.IsNullOrWhiteSpace(item.GhiChu))
+                                {
+                                    <small>@item.GhiChu</small>
+                                }
+                            </td>
+                            <td>
+                                <strong>@item.TenNCC</strong>
+                                <div class="text-muted small">Mã NCC: @item.MaNCC</div>
+                            </td>
+                            <td>@item.TenNV</td>
+                            <td>@item.NgayNhap.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="text-center">
+                                <span class="badge bg-light text-dark border">@item.SoDongSanPham mã • @item.TongSoLuongNhap SP</span>
+                            </td>
+                            <td class="text-end fw-bold text-primary">@item.TongTien.ToString("N0") đ</td>
+                            <td>
+                                <span class="status-pill @AdminStatusHelper.GetReceiptStatusBadgeClass(item.TrangThai)">
+                                    @AdminStatusHelper.GetReceiptStatusLabel(item.TrangThai)
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-1">
+                                    @if (item.TrangThai == "CHO_XU_LY")
+                                    {
+                                        using (Html.BeginForm("ConfirmReceipt", "StockReceipts", new { area = "Admin", id = item.MaPhieuNhap }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Xác nhận nhập kho phiếu " + item.MaPhieuNhap + " và cộng tồn kho ngay?');" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-success">✓ Nhập kho</button>
+                                        }
+                                    }
+                                    <a href="@Url.Action("Details", "StockReceipts", new { area = "Admin", id = item.MaPhieuNhap })" class="btn btn-sm btn-outline-primary">
+                                        Chi tiết
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+<!-- Bảng tồn kho hiện tại & Nhật ký giao dịch kho gần đây -->
+<div class="row g-4">
+    <div class="col-lg-7">
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Bảng tồn kho các phiên bản sản phẩm</h2>
+                    <p>Cập nhật tự động khi nhập hàng (+) và khi xác nhận đơn hàng (-)</p>
+                </div>
+                <span class="panel-badge">@Model.InventoryItems.Count biến thể</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table dashboard-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm / SKU</th>
+                            <th>Thương hiệu</th>
+                            <th class="text-end">Giá nhập</th>
+                            <th class="text-end">Giá bán</th>
+                            <th class="text-center">Tồn kho</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var inv in Model.InventoryItems)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@inv.TenSanPham</strong>
+                                    <small>@inv.SKU • @inv.CauHinh</small>
+                                </td>
+                                <td>@inv.TenThuongHieu</td>
+                                <td class="text-end">@inv.GiaNhap.ToString("N0") đ</td>
+                                <td class="text-end">@inv.GiaBan.ToString("N0") đ</td>
+                                <td class="text-center">
+                                    <span class="status-pill @(inv.SoLuongTon <= 5 ? "status-cho_xac_nhan" : "status-da_giao")">
+                                        @inv.SoLuongTon SP
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-5">
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Nhật ký kho gần đây</h2>
+                    <p>10 giao dịch nhập/xuất/hoàn kho mới nhất</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table dashboard-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Thời gian</th>
+                            <th>SKU</th>
+                            <th>Loại</th>
+                            <th class="text-center">SL</th>
+                            <th class="text-center">Tồn</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var log in Model.RecentLogs)
+                        {
+                            var isPlus = log.LoaiGiaoDich == "NHAP" || log.LoaiGiaoDich == "TRA_HANG" || log.LoaiGiaoDich == "DIEU_CHINH_TANG";
+                            <tr>
+                                <td>
+                                    <div>@log.NgayGiaoDich.ToString("dd/MM HH:mm")</div>
+                                    <small>@log.GhiChu</small>
+                                </td>
+                                <td><strong>@log.SKU</strong></td>
+                                <td>
+                                    <span class="status-pill @(isPlus ? "status-da_giao" : "status-cho_xac_nhan")">
+                                        @AdminStatusHelper.GetInventoryTxTypeLabel(log.LoaiGiaoDich)
+                                    </span>
+                                </td>
+                                <td class="text-center fw-bold @(isPlus ? "text-success" : "text-danger")">
+                                    @(isPlus ? "+" : "-")@log.SoLuong
+                                </td>
+                                <td class="text-center">@log.SoLuongTruoc → <strong>@log.SoLuongSau</strong></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,181 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.OrderIndexViewModel
+@using QuanLiDienThoaiDD.Areas.Admin.ViewModels
+@{
+    ViewBag.Title = "Quản lý đơn hàng";
+}
+
+<div class="dashboard-heading">
+    <div>
+        <h1>Quản lý đơn hàng</h1>
+        <p class="text-muted mb-0">Theo dõi, xác nhận đơn hàng (trừ tồn kho), cập nhật vận chuyển và xử lý hủy đơn.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="@Url.Action("Create", "Orders", new { area = "Admin" })" class="btn btn-primary">+ Tạo đơn hàng mới</a>
+    </div>
+</div>
+
+<div class="stats-grid stats-grid-6 mb-4">
+    <a href="@Url.Action("Index", new { status = "" })" class="stat-card stat-blue text-decoration-none @(string.IsNullOrEmpty(Model.Status) ? "border-primary" : "")">
+        <div class="stat-icon">Σ</div>
+        <div><span>Tất cả đơn</span><strong>@Model.TotalOrders</strong></div>
+    </a>
+    <a href="@Url.Action("Index", new { status = "CHO_XAC_NHAN" })" class="stat-card stat-orange text-decoration-none @(Model.Status == "CHO_XAC_NHAN" ? "border-warning" : "")">
+        <div class="stat-icon">!</div>
+        <div><span>Chờ xác nhận</span><strong>@Model.PendingCount</strong></div>
+    </a>
+    <a href="@Url.Action("Index", new { status = "DA_XAC_NHAN" })" class="stat-card stat-purple text-decoration-none @(Model.Status == "DA_XAC_NHAN" ? "border-primary" : "")">
+        <div class="stat-icon">✓</div>
+        <div><span>Đã xác nhận</span><strong>@Model.ConfirmedCount</strong></div>
+    </a>
+    <a href="@Url.Action("Index", new { status = "DANG_GIAO" })" class="stat-card stat-blue text-decoration-none @(Model.Status == "DANG_GIAO" ? "border-info" : "")">
+        <div class="stat-icon">→</div>
+        <div><span>Đang giao</span><strong>@Model.ShippingCount</strong></div>
+    </a>
+    <a href="@Url.Action("Index", new { status = "DA_GIAO" })" class="stat-card stat-green text-decoration-none @(Model.Status == "DA_GIAO" ? "border-success" : "")">
+        <div class="stat-icon">★</div>
+        <div><span>Đã giao</span><strong>@Model.DeliveredCount</strong></div>
+    </a>
+    <a href="@Url.Action("Index", new { status = "DA_HUY" })" class="stat-card stat-red text-decoration-none @(Model.Status == "DA_HUY" ? "border-danger" : "")">
+        <div class="stat-icon">✕</div>
+        <div><span>Đã hủy</span><strong>@Model.CanceledCount</strong></div>
+    </a>
+</div>
+
+<section class="dashboard-panel mb-4">
+    <div class="p-3 border-bottom bg-light rounded-top">
+        @using (Html.BeginForm("Index", "Orders", new { area = "Admin" }, FormMethod.Get, new { @class = "row g-2 align-items-end admin-filter-form" }))
+        {
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-muted mb-1">Tìm kiếm</label>
+                <input type="text" name="search" value="@Model.Search" class="form-control form-control-sm" placeholder="Mã đơn, người nhận, SĐT..." />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-bold text-muted mb-1">Trạng thái đơn</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">-- Tất cả --</option>
+                    @foreach (var st in AdminStatusHelper.OrderStatuses)
+                    {
+                        <option value="@st" @(Model.Status == st ? "selected" : "")>@AdminStatusHelper.GetOrderStatusLabel(st)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-bold text-muted mb-1">Thanh toán</label>
+                <select name="paymentStatus" class="form-select form-select-sm">
+                    <option value="">-- Tất cả --</option>
+                    @foreach (var pst in AdminStatusHelper.PaymentStatuses)
+                    {
+                        <option value="@pst" @(Model.PaymentStatus == pst ? "selected" : "")>@AdminStatusHelper.GetPaymentStatusLabel(pst)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-bold text-muted mb-1">Từ ngày</label>
+                <input type="date" name="fromDate" value="@(Model.FromDate.HasValue ? Model.FromDate.Value.ToString("yyyy-MM-dd") : "")" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-bold text-muted mb-1">Đến ngày</label>
+                <input type="date" name="toDate" value="@(Model.ToDate.HasValue ? Model.ToDate.Value.ToString("yyyy-MM-dd") : "")" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-1 d-flex gap-1">
+                <button type="submit" class="btn btn-sm btn-primary w-100">Lọc</button>
+                <a href="@Url.Action("Index", "Orders", new { area = "Admin" })" class="btn btn-sm btn-outline-secondary" title="Xóa bộ lọc">↺</a>
+            </div>
+        }
+    </div>
+
+    <div class="panel-heading">
+        <div>
+            <h2>Danh sách đơn hàng</h2>
+            <p>Tổng doanh thu đơn hợp lệ: <strong class="text-primary">@Model.TotalValidRevenue.ToString("N0") đ</strong></p>
+        </div>
+        <span class="panel-badge">Trang @Model.CurrentPage / @Model.TotalPages</span>
+    </div>
+
+    @if (Model.Orders == null || Model.Orders.Count == 0)
+    {
+        <div class="empty-panel">Không tìm thấy đơn hàng nào phù hợp với điều kiện lọc.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table dashboard-table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Khách hàng / Người nhận</th>
+                        <th>Ngày đặt</th>
+                        <th>SL SP</th>
+                        <th class="text-end">Tổng tiền</th>
+                        <th>Thanh toán</th>
+                        <th>Trạng thái đơn</th>
+                        <th>NV xử lý</th>
+                        <th class="text-end">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Orders)
+                    {
+                        <tr>
+                            <td>
+                                <a href="@Url.Action("Details", "Orders", new { area = "Admin", id = item.MaDonHang })" class="fw-bold text-decoration-none">
+                                    @item.MaDonHang
+                                </a>
+                                <small>@AdminStatusHelper.GetPaymentMethodLabel(item.PhuongThucThanhToan)</small>
+                            </td>
+                            <td>
+                                <strong>@item.TenNguoiNhan</strong>
+                                <div class="text-muted small">@item.SoDienThoaiNhan • @item.DiaChiGiaoHang</div>
+                            </td>
+                            <td>
+                                <div>@item.NgayDat.ToString("dd/MM/yyyy")</div>
+                                <small class="text-muted">@item.NgayDat.ToString("HH:mm")</small>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">@item.TongSoSanPham SP</span></td>
+                            <td class="text-end fw-bold text-primary">@item.TongTien.ToString("N0") đ</td>
+                            <td>
+                                <span class="status-pill @AdminStatusHelper.GetPaymentStatusBadgeClass(item.TrangThaiThanhToan)">
+                                    @AdminStatusHelper.GetPaymentStatusLabel(item.TrangThaiThanhToan)
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-pill @AdminStatusHelper.GetOrderStatusBadgeClass(item.TrangThaiDonHang)">
+                                    @AdminStatusHelper.GetOrderStatusLabel(item.TrangThaiDonHang)
+                                </span>
+                            </td>
+                            <td class="small text-muted">@item.TenNVXuLy</td>
+                            <td class="text-end">
+                                <div class="d-inline-flex gap-1">
+                                    @if (item.TrangThaiDonHang == "CHO_XAC_NHAN")
+                                    {
+                                        using (Html.BeginForm("ConfirmOrder", "Orders", new { area = "Admin", id = item.MaDonHang }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Xác nhận đơn hàng " + item.MaDonHang + " và trừ tồn kho tương ứng?');" }))
+                                        {
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-success" title="Xác nhận & Trừ tồn kho">✓ Xác nhận</button>
+                                        }
+                                    }
+                                    <a href="@Url.Action("Details", "Orders", new { area = "Admin", id = item.MaDonHang })" class="btn btn-sm btn-outline-primary">
+                                        Chi tiết
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        if (Model.TotalPages > 1)
+        {
+            <div class="p-3 border-top d-flex justify-content-end gap-1">
+                @for (int p = 1; p <= Model.TotalPages; p++)
+                {
+                    <a class="btn btn-sm @(p == Model.CurrentPage ? "btn-primary" : "btn-outline-secondary")"
+                       href="@Url.Action("Index", new { search = Model.Search, status = Model.Status, paymentStatus = Model.PaymentStatus, paymentMethod = Model.PaymentMethod, fromDate = Model.FromDate.HasValue ? Model.FromDate.Value.ToString("yyyy-MM-dd") : null, toDate = Model.ToDate.HasValue ? Model.ToDate.Value.ToString("yyyy-MM-dd") : null, page = p })">
+                        @p
+                    </a>
+                }
+            </div>
+        }
+    }
+</section>

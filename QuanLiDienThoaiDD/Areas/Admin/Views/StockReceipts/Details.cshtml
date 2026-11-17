@@ -1,0 +1,178 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.StockReceiptDetailViewModel
+@using QuanLiDienThoaiDD.Areas.Admin.ViewModels
+@{
+    ViewBag.Title = "Chi tiết phiếu nhập " + Model.MaPhieuNhap;
+}
+
+<div class="dashboard-heading">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <a href="@Url.Action("Index", "StockReceipts", new { area = "Admin" })" class="btn btn-sm btn-outline-secondary">← Danh sách phiếu nhập</a>
+            <span class="status-pill @AdminStatusHelper.GetReceiptStatusBadgeClass(Model.TrangThai)">
+                @AdminStatusHelper.GetReceiptStatusLabel(Model.TrangThai)
+            </span>
+        </div>
+        <h1>Phiếu nhập kho #@Model.MaPhieuNhap</h1>
+        <p class="text-muted mb-0">Ngày lập: @Model.NgayNhap.ToString("dd/MM/yyyy HH:mm") • Nhân viên phụ trách: <strong>@Model.TenNV (@Model.MaNV)</strong></p>
+    </div>
+    <div class="d-flex gap-2">
+        @if (Model.CanConfirm)
+        {
+            using (Html.BeginForm("ConfirmReceipt", "StockReceipts", new { area = "Admin", id = Model.MaPhieuNhap }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Xác nhận nhập kho phiếu " + Model.MaPhieuNhap + " và cộng số lượng vào tồn kho?');" }))
+            {
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-success">✓ Xác nhận nhập kho &amp; Cộng tồn kho</button>
+            }
+        }
+        @if (Model.CanCancel)
+        {
+            using (Html.BeginForm("CancelReceipt", "StockReceipts", new { area = "Admin", id = Model.MaPhieuNhap }, FormMethod.Post, new { @class = "d-inline", onsubmit = "return confirm('Bạn có chắc muốn hủy phiếu nhập chờ xử lý này?');" }))
+            {
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ghiChu" value="Hủy phiếu nhập chưa duyệt" />
+                <button type="submit" class="btn btn-outline-danger">✕ Hủy phiếu nhập</button>
+            }
+        }
+        <button type="button" class="btn btn-outline-secondary" onclick="window.print();">🖨 In phiếu nhập</button>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <section class="dashboard-panel mb-4">
+            <div class="panel-heading">
+                <div>
+                    <h2>Chi tiết sản phẩm nhập kho</h2>
+                    <p>Danh sách các biến thể sản phẩm, số lượng và đơn giá nhập</p>
+                </div>
+                <span class="panel-badge">@Model.Items.Sum(x => x.SoLuong) sản phẩm</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table dashboard-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Mã biến thể / SKU</th>
+                            <th>Tên sản phẩm &amp; Cấu hình</th>
+                            <th class="text-end">Đơn giá nhập</th>
+                            <th class="text-center">SL nhập</th>
+                            <th class="text-center">Tồn hiện tại</th>
+                            <th class="text-end">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@item.SKU</strong>
+                                    <small>@item.MaBienSanPham</small>
+                                </td>
+                                <td>
+                                    <strong>@item.TenSanPham</strong>
+                                    <div class="text-muted small">@item.CauHinh</div>
+                                </td>
+                                <td class="text-end">@item.DonGia.ToString("N0") đ</td>
+                                <td class="text-center fw-bold text-success">+@item.SoLuong</td>
+                                <td class="text-center">
+                                    <span class="badge bg-light text-dark border">@item.SoLuongTonHienTai SP</span>
+                                </td>
+                                <td class="text-end fw-bold">@item.ThanhTien.ToString("N0") đ</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="5" class="text-end fw-bold fs-6">Tổng giá trị phiếu nhập:</td>
+                            <td class="text-end fw-bold fs-5 text-primary">@Model.TongTien.ToString("N0") đ</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Nhật ký cập nhật tồn kho của phiếu nhập</h2>
+                    <p>Bản ghi đối chiếu trong bảng GIAODICHKHO</p>
+                </div>
+                <span class="panel-badge">@Model.InventoryLogs.Count bản ghi</span>
+            </div>
+            @if (Model.InventoryLogs.Count == 0)
+            {
+                <div class="empty-panel">Phiếu nhập này đang ở trạng thái chờ xử lý hoặc đã hủy nên chưa cộng tồn kho.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table dashboard-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Thời gian</th>
+                                <th>SKU</th>
+                                <th class="text-center">SL cộng thêm</th>
+                                <th class="text-center">Tồn trước → sau</th>
+                                <th>Nhân viên</th>
+                                <th>Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var log in Model.InventoryLogs)
+                            {
+                                <tr>
+                                    <td>@log.NgayGiaoDich.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td><strong>@log.SKU</strong><small>@log.MaBienSanPham</small></td>
+                                    <td class="text-center fw-bold text-success">+@log.SoLuong</td>
+                                    <td class="text-center">@log.SoLuongTruoc → <strong>@log.SoLuongSau</strong></td>
+                                    <td>@log.TenNV</td>
+                                    <td class="small text-muted">@log.GhiChu</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    </div>
+
+    <div class="col-lg-4">
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Thông tin nhà cung cấp</h2>
+                    <p>Đơn vị cung ứng lô hàng</p>
+                </div>
+            </div>
+            <div class="p-3 small">
+                <div class="mb-2">
+                    <span class="text-muted d-block">Mã nhà cung cấp:</span>
+                    <strong>@Model.MaNCC</strong>
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted d-block">Tên nhà cung cấp:</span>
+                    <strong>@Model.TenNCC</strong>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.DienThoaiNCC))
+                {
+                    <div class="mb-2">
+                        <span class="text-muted d-block">Điện thoại liên hệ:</span>
+                        <strong>@Model.DienThoaiNCC</strong>
+                    </div>
+                }
+                @if (!string.IsNullOrWhiteSpace(Model.DiaChiNCC))
+                {
+                    <div class="mb-2">
+                        <span class="text-muted d-block">Địa chỉ:</span>
+                        <strong>@Model.DiaChiNCC</strong>
+                    </div>
+                }
+                <hr />
+                <div class="mb-2">
+                    <span class="text-muted d-block">Ghi chú phiếu nhập:</span>
+                    <span>@(string.IsNullOrWhiteSpace(Model.GhiChu) ? "Không có ghi chú" : Model.GhiChu)</span>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,229 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.CreateOrderViewModel
+@{
+    ViewBag.Title = "Tạo đơn hàng mới";
+}
+
+<div class="dashboard-heading">
+    <div>
+        <a href="@Url.Action("Index", "Orders", new { area = "Admin" })" class="btn btn-sm btn-outline-secondary mb-2">← Quay lại danh sách đơn hàng</a>
+        <h1>Tạo đơn hàng mới</h1>
+        <p class="text-muted mb-0">Lập đơn hàng trực tiếp tại quầy hoặc tạo đơn mẫu để kiểm thử quy trình xác nhận &amp; trừ tồn kho.</p>
+    </div>
+</div>
+
+@using (Html.BeginForm("Create", "Orders", new { area = "Admin" }, FormMethod.Post, new { @class = "admin-full-form" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(false, "", new { @class = "alert alert-danger" })
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <section class="dashboard-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>1. Thông tin khách hàng &amp; giao nhận</h2>
+                        <p>Chọn khách hàng có sẵn hoặc nhập thông tin người nhận</p>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Khách hàng thành viên (Tùy chọn)</label>
+                        <select name="MaKH" id="customerSelect" class="form-select mw-100">
+                            <option value="" data-name="" data-phone="" data-address="">-- Khách vãng lai (Nhập tay) --</option>
+                            @if (Model.AvailableCustomers != null)
+                            {
+                                foreach (var c in Model.AvailableCustomers)
+                                {
+                                    <option value="@c.MaKH"
+                                            data-name="@c.TenKH"
+                                            data-phone="@c.DienThoai"
+                                            data-address="@c.DiaChi"
+                                            @(Model.MaKH == c.MaKH ? "selected" : "")>
+                                        @c.MaKH - @c.TenKH (@c.DienThoai)
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Họ tên người nhận *</label>
+                        @Html.TextBoxFor(x => x.TenNguoiNhan, new { @class = "form-control mw-100", id = "recipientName", required = "required", placeholder = "Nhập họ tên người nhận" })
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Số điện thoại nhận *</label>
+                        @Html.TextBoxFor(x => x.SoDienThoaiNhan, new { @class = "form-control mw-100", id = "recipientPhone", required = "required", placeholder = "Ví dụ: 0901234567" })
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Địa chỉ giao hàng *</label>
+                        @Html.TextBoxFor(x => x.DiaChiGiaoHang, new { @class = "form-control mw-100", id = "recipientAddress", required = "required", placeholder = "Số nhà, đường, quận/huyện, tỉnh/thành phố" })
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phương thức thanh toán</label>
+                            <select name="PhuongThucThanhToan" class="form-select mw-100">
+                                <option value="COD" @(Model.PhuongThucThanhToan == "COD" ? "selected" : "")>Tiền mặt khi nhận (COD)</option>
+                                <option value="CHUYEN_KHOAN" @(Model.PhuongThucThanhToan == "CHUYEN_KHOAN" ? "selected" : "")>Chuyển khoản ngân hàng</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Phí vận chuyển (đ)</label>
+                            @Html.TextBoxFor(x => x.PhiVanChuyen, new { @class = "form-control mw-100", type = "number", min = "0", step = "1000", id = "shippingFeeInput" })
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Giảm giá đơn hàng (đ)</label>
+                        @Html.TextBoxFor(x => x.GiamGia, new { @class = "form-control mw-100", type = "number", min = "0", step = "1000", id = "discountInput" })
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ghi chú đơn hàng</label>
+                        @Html.TextAreaFor(x => x.GhiChu, new { @class = "form-control mw-100", rows = "2", placeholder = "Ghi chú giao hàng..." })
+                    </div>
+
+                    <div class="form-check p-3 bg-light rounded border">
+                        @Html.CheckBoxFor(x => x.XacNhanNgay, new { @class = "form-check-input ms-0 me-2", id = "confirmNowCheck" })
+                        <label class="form-check-label fw-semibold" for="confirmNowCheck">
+                            Xác nhận đơn ngay &amp; Trừ tồn kho lập tức
+                        </label>
+                        <div class="small text-muted">Nếu không chọn, đơn sẽ ở trạng thái <strong>Chờ xác nhận</strong> để bạn duyệt sau.</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-lg-7">
+            <section class="dashboard-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>2. Chọn sản phẩm đặt mua</h2>
+                        <p>Chọn phiên bản sản phẩm và số lượng</p>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="addOrderItemBtn">+ Thêm dòng sản phẩm</button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table dashboard-table align-middle" id="orderItemsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 52%;">Biến thể sản phẩm</th>
+                                <th class="text-end" style="width: 18%;">Giá bán</th>
+                                <th style="width: 18%;">Số lượng</th>
+                                <th class="text-end" style="width: 12%;">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderItemsBody">
+                            <tr class="order-item-row">
+                                <td>
+                                    <select name="MaBienSanPhams" class="form-select form-select-sm mw-100 variant-select" required>
+                                        <option value="" data-price="0" data-stock="0">-- Chọn sản phẩm --</option>
+                                        @if (Model.AvailableVariants != null)
+                                        {
+                                            foreach (var v in Model.AvailableVariants)
+                                            {
+                                                <option value="@v.MaBienSanPham" data-price="@v.GiaBan" data-stock="@v.SoLuongTon">
+                                                    @v.TenHienThi (SKU: @v.SKU | Tồn: @v.SoLuongTon)
+                                                </option>
+                                            }
+                                        }
+                                    </select>
+                                </td>
+                                <td class="text-end fw-semibold unit-price-display">0 đ</td>
+                                <td>
+                                    <input type="number" name="SoLuongs" value="1" min="1" class="form-control form-control-sm mw-100 qty-input" required />
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-row-btn">✕</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="2" class="text-end fw-bold">Tổng cộng tạm tính:</td>
+                                <td colspan="2" class="text-end fw-bold fs-5 text-primary" id="orderGrandTotal">0 đ</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="p-3 border-top d-flex justify-content-end gap-2">
+                    <a href="@Url.Action("Index", "Orders", new { area = "Admin" })" class="btn btn-outline-secondary">Hủy</a>
+                    <button type="submit" class="btn btn-primary px-4">Lưu &amp; Tạo đơn hàng</button>
+                </div>
+            </section>
+        </div>
+    </div>
+}
+
+@section scripts {
+    <script>
+        (function () {
+            var customerSelect = document.getElementById('customerSelect');
+            if (customerSelect) {
+                customerSelect.addEventListener('change', function () {
+                    var opt = customerSelect.options[customerSelect.selectedIndex];
+                    if (opt && opt.value) {
+                        document.getElementById('recipientName').value = opt.getAttribute('data-name') || '';
+                        document.getElementById('recipientPhone').value = opt.getAttribute('data-phone') || '';
+                        document.getElementById('recipientAddress').value = opt.getAttribute('data-address') || '';
+                    }
+                });
+            }
+
+            var tbody = document.getElementById('orderItemsBody');
+            var addBtn = document.getElementById('addOrderItemBtn');
+
+            function recalc() {
+                var rows = tbody.querySelectorAll('.order-item-row');
+                var subtotal = 0;
+                rows.forEach(function (row) {
+                    var sel = row.querySelector('.variant-select');
+                    var qtyInput = row.querySelector('.qty-input');
+                    var priceCell = row.querySelector('.unit-price-display');
+                    var opt = sel.options[sel.selectedIndex];
+                    var price = opt ? parseFloat(opt.getAttribute('data-price') || '0') : 0;
+                    var qty = parseInt(qtyInput.value || '0', 10);
+                    priceCell.textContent = price.toLocaleString('vi-VN') + ' đ';
+                    if (qty > 0 && price > 0) {
+                        subtotal += price * qty;
+                    }
+                });
+                var ship = parseFloat(document.getElementById('shippingFeeInput').value || '0');
+                var disc = parseFloat(document.getElementById('discountInput').value || '0');
+                var total = Math.max(0, subtotal + ship - disc);
+                document.getElementById('orderGrandTotal').textContent = total.toLocaleString('vi-VN') + ' đ';
+            }
+
+            tbody.addEventListener('change', recalc);
+            tbody.addEventListener('input', recalc);
+            document.getElementById('shippingFeeInput').addEventListener('input', recalc);
+            document.getElementById('discountInput').addEventListener('input', recalc);
+
+            addBtn.addEventListener('click', function () {
+                var firstRow = tbody.querySelector('.order-item-row');
+                var clone = firstRow.cloneNode(true);
+                clone.querySelector('.variant-select').selectedIndex = 0;
+                clone.querySelector('.qty-input').value = '1';
+                clone.querySelector('.unit-price-display').textContent = '0 đ';
+                tbody.appendChild(clone);
+                recalc();
+            });
+
+            tbody.addEventListener('click', function (e) {
+                if (e.target.classList.contains('remove-row-btn')) {
+                    var rows = tbody.querySelectorAll('.order-item-row');
+                    if (rows.length > 1) {
+                        e.target.closest('.order-item-row').remove();
+                        recalc();
+                    }
+                }
+            });
+
+            recalc();
+        })();
+    </script>
+}

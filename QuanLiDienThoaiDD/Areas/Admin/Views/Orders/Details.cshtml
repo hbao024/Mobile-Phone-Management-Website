@@ -1,0 +1,410 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.OrderDetailViewModel
+@using QuanLiDienThoaiDD.Areas.Admin.ViewModels
+@{
+    ViewBag.Title = "Chi tiết đơn hàng " + Model.MaDonHang;
+    var allowedStatuses = AdminStatusHelper.GetAllowedNextOrderStatuses(Model.TrangThaiDonHang);
+}
+
+<div class="dashboard-heading">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <a href="@Url.Action("Index", "Orders", new { area = "Admin" })" class="btn btn-sm btn-outline-secondary">← Danh sách đơn</a>
+            <span class="status-pill @AdminStatusHelper.GetOrderStatusBadgeClass(Model.TrangThaiDonHang)">
+                @AdminStatusHelper.GetOrderStatusLabel(Model.TrangThaiDonHang)
+            </span>
+            <span class="status-pill @AdminStatusHelper.GetPaymentStatusBadgeClass(Model.TrangThaiThanhToan)">
+                @AdminStatusHelper.GetPaymentStatusLabel(Model.TrangThaiThanhToan)
+            </span>
+        </div>
+        <h1>Đơn hàng #@Model.MaDonHang</h1>
+        <p class="text-muted mb-0">Ngày đặt: @Model.NgayDat.ToString("dd/MM/yyyy HH:mm") • Cập nhật cuối: @Model.NgayCapNhat.ToString("dd/MM/yyyy HH:mm")</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print();">🖨 In hóa đơn</button>
+    </div>
+</div>
+
+<!-- Thanh tiến trình trạng thái đơn hàng -->
+<div class="order-stepper mb-4">
+    @{
+        var steps = new[]
+        {
+            new { Code = "CHO_XAC_NHAN", Title = "1. Chờ xác nhận", Desc = "Đơn mới tạo" },
+            new { Code = "DA_XAC_NHAN", Title = "2. Đã xác nhận", Desc = "Đã trừ tồn kho" },
+            new { Code = "DANG_GIAO", Title = "3. Đang giao hàng", Desc = "Đang vận chuyển" },
+            new { Code = "DA_GIAO", Title = "4. Đã giao thành công", Desc = "Hoàn tất & Thu tiền" }
+        };
+        int currentIdx = Array.FindIndex(steps, s => s.Code == Model.TrangThaiDonHang);
+    }
+    @if (Model.TrangThaiDonHang == "DA_HUY")
+    {
+        <div class="alert alert-danger mb-0">
+            <strong>Đơn hàng đã bị hủy.</strong>
+            @if (!string.IsNullOrWhiteSpace(Model.LyDoHuy))
+            {
+                <span>Lý do hủy: <em>@Model.LyDoHuy</em></span>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="stepper-track">
+            @for (int i = 0; i < steps.Length; i++)
+            {
+                var stepClass = i < currentIdx ? "completed" : (i == currentIdx ? "active" : "");
+                <div class="stepper-item @stepClass">
+                    <div class="stepper-dot">@(i < currentIdx ? "✓" : (i + 1).ToString())</div>
+                    <div>
+                        <div class="fw-bold small">@steps[i].Title</div>
+                        <small class="text-muted">@steps[i].Desc</small>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<div class="row g-4">
+    <!-- Cột trái: Chi tiết sản phẩm & Lịch sử -->
+    <div class="col-lg-8">
+        <section class="dashboard-panel mb-4">
+            <div class="panel-heading">
+                <div>
+                    <h2>Danh sách sản phẩm trong đơn</h2>
+                    <p>Kiểm tra số lượng đặt và số lượng tồn kho hiện tại của từng phiên bản</p>
+                </div>
+                <span class="panel-badge">@Model.Items.Sum(x => x.SoLuong) sản phẩm</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table dashboard-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm / Biến thể</th>
+                            <th class="text-end">Đơn giá</th>
+                            <th class="text-center">SL đặt</th>
+                            <th class="text-center">Tồn kho hiện tại</th>
+                            <th class="text-end">Giảm giá</th>
+                            <th class="text-end">Thành tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            var shortage = Model.CanConfirm && item.SoLuongTonHienTai < item.SoLuong;
+                            <tr class="@(shortage ? "table-danger" : "")">
+                                <td>
+                                    <strong>@item.TenSanPham</strong>
+                                    <small>Mã biến thể: @item.MaBienSanPham | SKU: @item.SKU</small>
+                                </td>
+                                <td class="text-end">@item.DonGia.ToString("N0") đ</td>
+                                <td class="text-center fw-bold">@item.SoLuong</td>
+                                <td class="text-center">
+                                    <span class="badge @(shortage ? "bg-danger" : "bg-light text-dark border")">
+                                        Còn @item.SoLuongTonHienTai
+                                    </span>
+                                    @if (shortage)
+                                    {
+                                        <div class="text-danger small fw-bold">Thiếu @(item.SoLuong - item.SoLuongTonHienTai) SP!</div>
+                                    }
+                                </td>
+                                <td class="text-end">@item.GiamGia.ToString("N0") đ</td>
+                                <td class="text-end fw-bold">@item.ThanhTien.ToString("N0") đ</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="5" class="text-end text-muted">Tạm tính:</td>
+                            <td class="text-end fw-semibold">@Model.TamTinh.ToString("N0") đ</td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="text-end text-muted">Phí vận chuyển:</td>
+                            <td class="text-end">@Model.PhiVanChuyen.ToString("N0") đ</td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="text-end text-muted">Giảm giá:</td>
+                            <td class="text-end text-danger">-@Model.GiamGia.ToString("N0") đ</td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="text-end fw-bold fs-6">Tổng thanh toán:</td>
+                            <td class="text-end fw-bold fs-5 text-primary">@Model.TongTien.ToString("N0") đ</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
+        <!-- Nhật ký giao dịch kho của đơn hàng -->
+        <section class="dashboard-panel mb-4">
+            <div class="panel-heading">
+                <div>
+                    <h2>Biến động tồn kho của đơn hàng</h2>
+                    <p>Ghi nhận trừ kho khi xác nhận đơn (BAN) và hoàn kho khi hủy đơn (TRA_HANG)</p>
+                </div>
+                <span class="panel-badge">@Model.InventoryLogs.Count giao dịch</span>
+            </div>
+            @if (Model.InventoryLogs.Count == 0)
+            {
+                <div class="empty-panel">Chưa phát sinh giao dịch trừ/hoàn kho cho đơn hàng này (đơn chưa xác nhận).</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table dashboard-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Thời gian</th>
+                                <th>Biến thể / SKU</th>
+                                <th>Loại GD</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-center">Tồn trước → sau</th>
+                                <th>Nhân viên</th>
+                                <th>Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var log in Model.InventoryLogs)
+                            {
+                                <tr>
+                                    <td>@log.NgayGiaoDich.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td><strong>@log.SKU</strong><small>@log.MaBienSanPham</small></td>
+                                    <td>
+                                        <span class="status-pill @(log.LoaiGiaoDich == "BAN" ? "status-cho_xac_nhan" : "status-da_giao")">
+                                            @AdminStatusHelper.GetInventoryTxTypeLabel(log.LoaiGiaoDich)
+                                        </span>
+                                    </td>
+                                    <td class="text-center fw-bold">@(log.LoaiGiaoDich == "BAN" ? "-" : "+")@log.SoLuong</td>
+                                    <td class="text-center">@log.SoLuongTruoc → <strong>@log.SoLuongSau</strong></td>
+                                    <td>@log.TenNV</td>
+                                    <td class="small text-muted">@log.GhiChu</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+
+        <!-- Lịch sử trạng thái đơn hàng -->
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Lịch sử cập nhật trạng thái</h2>
+                    <p>Theo dõi toàn bộ quá trình xử lý đơn hàng</p>
+                </div>
+                <span class="panel-badge">@Model.StatusHistories.Count lần cập nhật</span>
+            </div>
+            @if (Model.StatusHistories.Count == 0)
+            {
+                <div class="empty-panel">Chưa có lịch sử trạng thái.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table dashboard-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Thời gian</th>
+                                <th>Trạng thái cũ</th>
+                                <th>Trạng thái mới</th>
+                                <th>Tài khoản</th>
+                                <th>Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var h in Model.StatusHistories)
+                            {
+                                <tr>
+                                    <td>@h.ThoiGian.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                                    <td>
+                                        @if (string.IsNullOrEmpty(h.TrangThaiCu))
+                                        {
+                                            <span class="text-muted">Khởi tạo</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-pill @AdminStatusHelper.GetOrderStatusBadgeClass(h.TrangThaiCu)">
+                                                @AdminStatusHelper.GetOrderStatusLabel(h.TrangThaiCu)
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="status-pill @AdminStatusHelper.GetOrderStatusBadgeClass(h.TrangThaiMoi)">
+                                            @AdminStatusHelper.GetOrderStatusLabel(h.TrangThaiMoi)
+                                        </span>
+                                    </td>
+                                    <td><strong>@h.NguoiThucHien</strong></td>
+                                    <td class="small">@h.GhiChu</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    </div>
+
+    <!-- Cột phải: Xử lý đơn hàng & Thông tin người nhận -->
+    <div class="col-lg-4">
+        <!-- Thao tác nhanh -->
+        <section class="dashboard-panel mb-4">
+            <div class="panel-heading">
+                <div>
+                    <h2>Xử lý đơn hàng</h2>
+                    <p>Xác nhận, giao hàng hoặc hủy đơn</p>
+                </div>
+            </div>
+            <div class="p-3">
+                @if (Model.CanConfirm)
+                {
+                    if (!Model.HasEnoughStockForAllItems)
+                    {
+                        <div class="alert alert-warning small">
+                            <strong>Cảnh báo tồn kho:</strong> Một hoặc nhiều sản phẩm trong đơn không đủ tồn kho. Vui lòng <a href="@Url.Action("Create", "StockReceipts", new { area = "Admin" })">lập phiếu nhập hàng</a> trước khi xác nhận!
+                        </div>
+                    }
+                    using (Html.BeginForm("ConfirmOrder", "Orders", new { area = "Admin", id = Model.MaDonHang }, FormMethod.Post, new { @class = "mb-3" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold">Ghi chú xác nhận:</label>
+                            <input type="text" name="ghiChu" class="form-control form-control-sm mw-100" placeholder="Xác nhận đơn và xuất kho..." />
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 fw-bold" @(Model.HasEnoughStockForAllItems ? "" : "disabled")>
+                            ✓ Xác nhận đơn hàng &amp; Trừ tồn kho
+                        </button>
+                    }
+                }
+
+                @if (Model.CanShip)
+                {
+                    using (Html.BeginForm("UpdateStatus", "Orders", new { area = "Admin", id = Model.MaDonHang }, FormMethod.Post, new { @class = "mb-3" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="trangThaiMoi" value="DANG_GIAO" />
+                        <input type="hidden" name="ghiChu" value="Bàn giao đơn hàng cho đơn vị vận chuyển" />
+                        <button type="submit" class="btn btn-primary w-100 fw-bold">
+                            🚚 Chuyển sang Đang giao hàng
+                        </button>
+                    }
+                }
+
+                @if (Model.CanDeliver)
+                {
+                    using (Html.BeginForm("UpdateStatus", "Orders", new { area = "Admin", id = Model.MaDonHang }, FormMethod.Post, new { @class = "mb-3" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="trangThaiMoi" value="DA_GIAO" />
+                        <input type="hidden" name="trangThaiThanhToan" value="DA_THANH_TOAN" />
+                        <input type="hidden" name="ghiChu" value="Giao hàng thành công và hoàn tất thanh toán" />
+                        <button type="submit" class="btn btn-success w-100 fw-bold">
+                            ★ Xác nhận Đã giao hàng thành công
+                        </button>
+                    }
+                }
+
+                <!-- Biểu mẫu cập nhật trạng thái chi tiết -->
+                <hr />
+                <h6 class="fw-bold small text-uppercase text-muted mb-2">Cập nhật trạng thái / thanh toán</h6>
+                @using (Html.BeginForm("UpdateStatus", "Orders", new { area = "Admin", id = Model.MaDonHang }, FormMethod.Post, new { @class = "admin-full-form" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <div class="mb-2">
+                        <label class="form-label small">Trạng thái đơn hàng</label>
+                        <select name="trangThaiMoi" class="form-select form-select-sm mw-100">
+                            @foreach (var st in allowedStatuses)
+                            {
+                                <option value="@st" @(Model.TrangThaiDonHang == st ? "selected" : "")>
+                                    @AdminStatusHelper.GetOrderStatusLabel(st)
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small">Trạng thái thanh toán</label>
+                        <select name="trangThaiThanhToan" class="form-select form-select-sm mw-100">
+                            @foreach (var pst in AdminStatusHelper.PaymentStatuses)
+                            {
+                                <option value="@pst" @(Model.TrangThaiThanhToan == pst ? "selected" : "")>
+                                    @AdminStatusHelper.GetPaymentStatusLabel(pst)
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small">Ghi chú xử lý</label>
+                        <textarea name="ghiChu" rows="2" class="form-control form-control-sm mw-100" placeholder="Nhập ghi chú cập nhật..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary btn-sm w-100">Lưu cập nhật</button>
+                }
+
+                @if (Model.CanCancel)
+                {
+                    <hr />
+                    <h6 class="fw-bold small text-uppercase text-danger mb-2">Hủy đơn hàng</h6>
+                    using (Html.BeginForm("CancelOrder", "Orders", new { area = "Admin", id = Model.MaDonHang }, FormMethod.Post, new { @class = "admin-full-form", onsubmit = "return confirm('Bạn có chắc chắn muốn hủy đơn hàng này? Nếu đơn đã xác nhận, tồn kho sẽ được hoàn lại tự động.');" }))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="mb-2">
+                            <input type="text" name="lyDoHuy" required class="form-control form-control-sm mw-100" placeholder="Nhập lý do hủy đơn (bắt buộc)..." />
+                        </div>
+                        <button type="submit" class="btn btn-outline-danger btn-sm w-100">✕ Hủy đơn hàng này</button>
+                    }
+                }
+            </div>
+        </section>
+
+        <!-- Thông tin người nhận & khách hàng -->
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Thông tin giao nhận</h2>
+                    <p>Khách hàng và địa chỉ nhận hàng</p>
+                </div>
+            </div>
+            <div class="p-3 small">
+                <div class="mb-2">
+                    <span class="text-muted d-block">Khách hàng:</span>
+                    @if (!string.IsNullOrEmpty(Model.MaKH))
+                    {
+                        <a href="@Url.Action("Details", "Customers", new { area = "Admin", id = Model.MaKH })" class="fw-bold text-decoration-none">
+                            @Model.TenKhachHang (@Model.MaKH)
+                        </a>
+                    }
+                    else
+                    {
+                        <strong>@Model.TenKhachHang</strong>
+                    }
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted d-block">Người nhận hàng:</span>
+                    <strong>@Model.TenNguoiNhan</strong>
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted d-block">Số điện thoại nhận:</span>
+                    <strong>@Model.SoDienThoaiNhan</strong>
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted d-block">Địa chỉ giao hàng:</span>
+                    <strong>@Model.DiaChiGiaoHang</strong>
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted d-block">Phương thức thanh toán:</span>
+                    <strong>@AdminStatusHelper.GetPaymentMethodLabel(Model.PhuongThucThanhToan)</strong>
+                </div>
+                <div class="mb-2">
+                    <span class="text-muted d-block">Nhân viên phụ trách:</span>
+                    <strong>@Model.TenNVXuLy</strong>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.GhiChu))
+                {
+                    <div class="mt-3 p-2 bg-light rounded">
+                        <span class="text-muted d-block">Ghi chú của khách:</span>
+                        <span>@Model.GhiChu</span>
+                    </div>
+                }
+            </div>
+        </section>
+    </div>
+</div>

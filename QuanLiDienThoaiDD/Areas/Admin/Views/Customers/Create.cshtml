@@ -1,0 +1,69 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.CustomerFormViewModel
+@{
+    ViewBag.Title = "Thêm khách hàng mới";
+}
+
+<div class="dashboard-heading">
+    <div>
+        <a href="@Url.Action("Index", "Customers", new { area = "Admin" })" class="btn btn-sm btn-outline-secondary mb-2">← Danh sách khách hàng</a>
+        <h1>Thêm khách hàng mới</h1>
+        <p class="text-muted mb-0">Tạo hồ sơ khách hàng mới trong hệ thống.</p>
+    </div>
+</div>
+
+<section class="dashboard-panel" style="max-width: 680px;">
+    <div class="panel-heading">
+        <div>
+            <h2>Thông tin khách hàng</h2>
+            <p>Các trường có dấu (*) là bắt buộc</p>
+        </div>
+    </div>
+    <div class="p-4">
+        @using (Html.BeginForm("Create", "Customers", new { area = "Admin" }, FormMethod.Post, new { @class = "admin-full-form" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Mã khách hàng</label>
+                @Html.TextBoxFor(x => x.MaKH, new { @class = "form-control mw-100", @readonly = "readonly" })
+                @Html.ValidationMessageFor(x => x.MaKH, null, new { @class = "text-danger small" })
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Họ và tên khách hàng *</label>
+                @Html.TextBoxFor(x => x.TenKH, new { @class = "form-control mw-100", required = "required", placeholder = "Nhập họ và tên..." })
+                @Html.ValidationMessageFor(x => x.TenKH, null, new { @class = "text-danger small" })
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Số điện thoại *</label>
+                    @Html.TextBoxFor(x => x.DienThoai, new { @class = "form-control mw-100", required = "required", placeholder = "09xxxxxxxx" })
+                    @Html.ValidationMessageFor(x => x.DienThoai, null, new { @class = "text-danger small" })
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Email</label>
+                    @Html.TextBoxFor(x => x.Email, new { @class = "form-control mw-100", type = "email", placeholder = "khachhang@example.com" })
+                    @Html.ValidationMessageFor(x => x.Email, null, new { @class = "text-danger small" })
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Địa chỉ</label>
+                @Html.TextAreaFor(x => x.DiaChi, new { @class = "form-control mw-100", rows = "2", placeholder = "Nhập địa chỉ liên hệ / giao hàng..." })
+                @Html.ValidationMessageFor(x => x.DiaChi, null, new { @class = "text-danger small" })
+            </div>
+
+            <div class="form-check mb-4">
+                @Html.CheckBoxFor(x => x.TrangThai, new { @class = "form-check-input", id = "statusCheck" })
+                <label class="form-check-label fw-semibold" for="statusCheck">Kích hoạt trạng thái hoạt động</label>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <a href="@Url.Action("Index", "Customers", new { area = "Admin" })" class="btn btn-outline-secondary">Hủy</a>
+                <button type="submit" class="btn btn-primary px-4">Lưu khách hàng</button>
+            </div>
+        }
+    </div>
+</section>

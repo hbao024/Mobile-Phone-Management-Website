@@ -1,0 +1,190 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.CreateStockReceiptViewModel
+@{
+    ViewBag.Title = "Lập phiếu nhập hàng mới";
+}
+
+<div class="dashboard-heading">
+    <div>
+        <a href="@Url.Action("Index", "StockReceipts", new { area = "Admin" })" class="btn btn-sm btn-outline-secondary mb-2">← Danh sách phiếu nhập</a>
+        <h1>Lập phiếu nhập kho mới</h1>
+        <p class="text-muted mb-0">Nhập hàng từ nhà cung cấp và tự động cộng số lượng vào bảng tồn kho.</p>
+    </div>
+</div>
+
+@using (Html.BeginForm("Create", "StockReceipts", new { area = "Admin" }, FormMethod.Post, new { @class = "admin-full-form" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(false, "", new { @class = "alert alert-danger" })
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <section class="dashboard-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>1. Thông tin phiếu nhập</h2>
+                        <p>Nhà cung cấp &amp; Trạng thái nhập</p>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Mã phiếu nhập</label>
+                        @Html.TextBoxFor(x => x.MaPhieuNhap, new { @class = "form-control mw-100", placeholder = "Tự động sinh nếu để trống" })
+                        @Html.ValidationMessageFor(x => x.MaPhieuNhap, null, new { @class = "text-danger small" })
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Nhà cung cấp *</label>
+                        <select name="MaNCC" class="form-select mw-100" required>
+                            <option value="">-- Chọn nhà cung cấp --</option>
+                            @if (Model.Suppliers != null)
+                            {
+                                foreach (var s in Model.Suppliers)
+                                {
+                                    <option value="@s.MaNCC" @(Model.MaNCC == s.MaNCC ? "selected" : "")>
+                                        @s.TenNCC (@s.MaNCC)
+                                    </option>
+                                }
+                            }
+                        </select>
+                        @Html.ValidationMessageFor(x => x.MaNCC, null, new { @class = "text-danger small" })
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Trạng thái xử lý kho *</label>
+                        <select name="TrangThai" class="form-select mw-100">
+                            <option value="DA_NHAP" @(Model.TrangThai != "CHO_XU_LY" ? "selected" : "")>Nhập kho ngay (Cộng tồn kho lập tức)</option>
+                            <option value="CHO_XU_LY" @(Model.TrangThai == "CHO_XU_LY" ? "selected" : "")>Chờ xử lý (Lưu phiếu, duyệt nhập kho sau)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Ghi chú lô hàng</label>
+                        @Html.TextAreaFor(x => x.GhiChu, new { @class = "form-control mw-100", rows = "3", placeholder = "Nhập ghi chú hóa đơn, số chứng từ NCC..." })
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-lg-8">
+            <section class="dashboard-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h2>2. Chi tiết mặt hàng nhập</h2>
+                        <p>Chọn biến thể sản phẩm, nhập số lượng và đơn giá nhập</p>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="addReceiptRowBtn">+ Thêm dòng sản phẩm</button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table dashboard-table align-middle" id="receiptItemsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 44%;">Biến thể sản phẩm</th>
+                                <th style="width: 15%;">SL nhập</th>
+                                <th style="width: 22%;">Đơn giá nhập (đ)</th>
+                                <th class="text-end" style="width: 13%;">Thành tiền</th>
+                                <th class="text-end" style="width: 6%;">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="receiptItemsBody">
+                            <tr class="receipt-item-row">
+                                <td>
+                                    <select name="MaBienSanPhams" class="form-select form-select-sm mw-100 variant-select" required>
+                                        <option value="" data-cost="0">-- Chọn biến thể sản phẩm --</option>
+                                        @if (Model.Variants != null)
+                                        {
+                                            foreach (var v in Model.Variants)
+                                            {
+                                                <option value="@v.MaBienSanPham" data-cost="@v.GiaNhap">
+                                                    @v.TenHienThi [SKU: @v.SKU | Tồn: @v.SoLuongTon]
+                                                </option>
+                                            }
+                                        }
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" name="SoLuongs" value="5" min="1" class="form-control form-control-sm mw-100 qty-input" required />
+                                </td>
+                                <td>
+                                    <input type="number" name="DonGias" value="0" min="0" step="1000" class="form-control form-control-sm mw-100 price-input" required />
+                                </td>
+                                <td class="text-end fw-semibold line-total-cell">0 đ</td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-row-btn">✕</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold">Tổng tiền phiếu nhập:</td>
+                                <td colspan="2" class="text-end fw-bold fs-5 text-primary" id="receiptGrandTotal">0 đ</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div class="p-3 border-top d-flex justify-content-end gap-2">
+                    <a href="@Url.Action("Index", "StockReceipts", new { area = "Admin" })" class="btn btn-outline-secondary">Hủy</a>
+                    <button type="submit" class="btn btn-primary px-4">Lưu phiếu nhập</button>
+                </div>
+            </section>
+        </div>
+    </div>
+}
+
+@section scripts {
+    <script>
+        (function () {
+            var tbody = document.getElementById('receiptItemsBody');
+            var addBtn = document.getElementById('addReceiptRowBtn');
+
+            function updateTotals() {
+                var rows = tbody.querySelectorAll('.receipt-item-row');
+                var grandTotal = 0;
+                rows.forEach(function (row) {
+                    var qty = parseInt(row.querySelector('.qty-input').value || '0', 10);
+                    var price = parseFloat(row.querySelector('.price-input').value || '0');
+                    var lineTotal = (qty > 0 && price >= 0) ? (qty * price) : 0;
+                    row.querySelector('.line-total-cell').textContent = lineTotal.toLocaleString('vi-VN') + ' đ';
+                    grandTotal += lineTotal;
+                });
+                document.getElementById('receiptGrandTotal').textContent = grandTotal.toLocaleString('vi-VN') + ' đ';
+            }
+
+            tbody.addEventListener('change', function (e) {
+                if (e.target.classList.contains('variant-select')) {
+                    var row = e.target.closest('.receipt-item-row');
+                    var opt = e.target.options[e.target.selectedIndex];
+                    var cost = opt ? parseFloat(opt.getAttribute('data-cost') || '0') : 0;
+                    row.querySelector('.price-input').value = cost;
+                }
+                updateTotals();
+            });
+
+            tbody.addEventListener('input', updateTotals);
+
+            addBtn.addEventListener('click', function () {
+                var firstRow = tbody.querySelector('.receipt-item-row');
+                var clone = firstRow.cloneNode(true);
+                clone.querySelector('.variant-select').selectedIndex = 0;
+                clone.querySelector('.qty-input').value = '5';
+                clone.querySelector('.price-input').value = '0';
+                clone.querySelector('.line-total-cell').textContent = '0 đ';
+                tbody.appendChild(clone);
+                updateTotals();
+            });
+
+            tbody.addEventListener('click', function (e) {
+                if (e.target.classList.contains('remove-row-btn')) {
+                    var rows = tbody.querySelectorAll('.receipt-item-row');
+                    if (rows.length > 1) {
+                        e.target.closest('.receipt-item-row').remove();
+                        updateTotals();
+                    }
+                }
+            });
+
+            updateTotals();
+        })();
+    </script>
+}

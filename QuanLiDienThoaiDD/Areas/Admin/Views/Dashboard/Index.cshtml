@@ -1,0 +1,105 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.DashboardViewModel
+@using QuanLiDienThoaiDD.Areas.Admin.ViewModels
+@{
+    ViewBag.Title = "Dashboard";
+}
+
+<div class="dashboard-heading">
+    <div>
+        <h1>Xin chào, @User.Identity.Name</h1>
+        <p class="text-muted mb-0">Đây là tình hình hoạt động mới nhất của cửa hàng MobileHub.</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+        <a href="@Url.Action("Create", "Orders", new { area = "Admin" })" class="btn btn-sm btn-outline-primary">+ Tạo đơn hàng</a>
+        <a href="@Url.Action("Create", "StockReceipts", new { area = "Admin" })" class="btn btn-sm btn-primary">+ Lập phiếu nhập kho</a>
+        <span class="dashboard-date">@DateTime.Now.ToString("dd/MM/yyyy")</span>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card stat-blue">
+        <div class="stat-icon">$</div>
+        <div><span>Doanh thu hôm nay</span><strong>@Model.TodayRevenue.ToString("N0") đ</strong></div>
+    </div>
+    <div class="stat-card stat-purple">
+        <div class="stat-icon">#</div>
+        <div><span>Đơn hàng hôm nay</span><strong>@Model.TodayOrders</strong></div>
+    </div>
+    <div class="stat-card stat-orange">
+        <div class="stat-icon">!</div>
+        <div><span>Chờ xác nhận</span><strong>@Model.PendingOrders</strong></div>
+    </div>
+    <div class="stat-card stat-green">
+        <div class="stat-icon">+</div>
+        <div><span>Khách hàng / Sản phẩm</span><strong>@Model.TotalCustomers KH / @Model.TotalProducts SP</strong></div>
+    </div>
+</div>
+
+<div class="dashboard-grid">
+    <section class="dashboard-panel">
+        <div class="panel-heading">
+            <div><h2>Đơn hàng gần đây</h2><p>Những đơn hàng mới nhất trong hệ thống</p></div>
+            <a href="@Url.Action("Index", "Orders", new { area = "Admin" })" class="panel-badge text-decoration-none">Xem tất cả (@Model.RecentOrders.Count) →</a>
+        </div>
+        @if (Model.RecentOrders.Count == 0)
+        {
+            <div class="empty-panel">Chưa có đơn hàng nào.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table dashboard-table">
+                    <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Trạng thái</th><th class="text-end">Tổng tiền</th><th class="text-end">Thao tác</th></tr></thead>
+                    <tbody>
+                    @foreach (var order in Model.RecentOrders)
+                    {
+                        <tr>
+                            <td>
+                                <a href="@Url.Action("Details", "Orders", new { area = "Admin", id = order.OrderId })" class="text-decoration-none fw-bold">
+                                    @order.OrderId
+                                </a>
+                                <small>@order.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                            </td>
+                            <td>@order.CustomerName</td>
+                            <td><span class="status-pill @AdminStatusHelper.GetOrderStatusBadgeClass(order.Status)">@AdminStatusHelper.GetOrderStatusLabel(order.Status)</span></td>
+                            <td class="text-end fw-semibold">@order.Total.ToString("N0") đ</td>
+                            <td class="text-end">
+                                <a href="@Url.Action("Details", "Orders", new { area = "Admin", id = order.OrderId })" class="btn btn-sm btn-light">Chi tiết</a>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <section class="dashboard-panel">
+        <div class="panel-heading">
+            <div><h2>Sắp hết hàng</h2><p>Các phiên bản cần được nhập thêm</p></div>
+            <a href="@Url.Action("Create", "StockReceipts", new { area = "Admin" })" class="panel-badge warning text-decoration-none">Nhập kho (@Model.LowStockItems.Count SP) →</a>
+        </div>
+        @if (Model.LowStockItems.Count == 0)
+        {
+            <div class="empty-panel">Kho hàng đang ở mức an toàn.</div>
+        }
+        else
+        {
+            <div class="low-stock-list">
+                @foreach (var item in Model.LowStockItems)
+                {
+                    <div class="low-stock-item">
+                        <div class="product-thumb">
+                            @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                            { <img src="@Url.Content(item.ImageUrl)" alt="@item.ProductName" onerror="this.style.display='none'; this.parentElement.innerText='SP';" /> }
+                            else
+                            { <span>SP</span> }
+                        </div>
+                        <div class="low-stock-info"><strong>@item.ProductName</strong><small>@item.Sku</small></div>
+                        <span class="stock-number">@item.Stock</span>
+                    </div>
+                }
+            </div>
+        }
+    </section>
+</div>
