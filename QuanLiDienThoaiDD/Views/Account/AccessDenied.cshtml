@@ -1,0 +1,10 @@
+@{
+    ViewBag.Title = "Không có quyền truy cập";
+}
+
+<div class="empty-state py-5 text-center">
+    <div class="empty-state-icon">!</div>
+    <h1>Không có quyền truy cập</h1>
+    <p class="text-muted">Tài khoản của bạn không được phép sử dụng chức năng này.</p>
+    @Html.ActionLink("Về trang chủ", "Index", "Home", null, new { @class = "btn btn-primary" })
+</div>

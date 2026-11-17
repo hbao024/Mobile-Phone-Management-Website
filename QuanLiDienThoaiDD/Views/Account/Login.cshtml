@@ -1,0 +1,53 @@
+@model QuanLiDienThoaiDD.ViewModels.LoginViewModel
+@{
+    ViewBag.Title = "Đăng nhập";
+}
+
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-brand">
+            <span class="brand-mark">M</span>
+            <div>
+                <div class="brand-name">MobileHub</div>
+                <div class="brand-caption">Quản lý điện thoại di động</div>
+            </div>
+        </div>
+
+        <h1>Đăng nhập</h1>
+        <p class="text-muted">Đăng nhập để tiếp tục sử dụng hệ thống.</p>
+
+        @using (Html.BeginForm("Login", "Account", FormMethod.Post, new { @class = "auth-form" }))
+        {
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(x => x.ReturnUrl)
+            @Html.ValidationSummary(true, "Đăng nhập chưa thành công.", new { @class = "alert alert-danger" })
+
+            <div class="mb-3">
+                @Html.LabelFor(x => x.TenDangNhap, new { @class = "form-label" })
+                @Html.TextBoxFor(x => x.TenDangNhap, new { @class = "form-control", autocomplete = "username", autofocus = "autofocus" })
+                @Html.ValidationMessageFor(x => x.TenDangNhap, null, new { @class = "text-danger" })
+            </div>
+            <div class="mb-3">
+                @Html.LabelFor(x => x.MatKhau, new { @class = "form-label" })
+                @Html.PasswordFor(x => x.MatKhau, new { @class = "form-control", autocomplete = "current-password" })
+                @Html.ValidationMessageFor(x => x.MatKhau, null, new { @class = "text-danger" })
+            </div>
+            <div class="form-check mb-4">
+                @Html.CheckBoxFor(x => x.GhiNhoDangNhap, new { @class = "form-check-input" })
+                @Html.LabelFor(x => x.GhiNhoDangNhap, new { @class = "form-check-label" })
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+        }
+
+        <div class="demo-account-note">
+            <strong>Tài khoản mẫu</strong>
+            <span>admin / Admin@123</span>
+            <span>nhanvien / Nhanvien@123</span>
+            <span>khachhang / Khachhang@123</span>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
