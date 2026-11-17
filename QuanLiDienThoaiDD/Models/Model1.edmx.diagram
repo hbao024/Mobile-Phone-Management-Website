@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="f1018e2818f24ada99ab33a3585b9502" Name="Diagram1" ZoomLevel="55">
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.BIENSANPHAM" Width="1.5" PointX="8.25" PointY="10.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.CHITIETDONHANG" Width="1.5" PointX="10.5" PointY="7.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.CHITIETGIOHANG" Width="1.5" PointX="10.5" PointY="14.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.CHITIETPHIEUNHAP" Width="1.5" PointX="10.5" PointY="11.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.DANHGIA" Width="1.5" PointX="13.5" PointY="5.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.DONHANG" Width="1.5" PointX="8.375" PointY="1" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.GIAODICHKHO" Width="1.5" PointX="13.5" PointY="10.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.GIOHANG" Width="1.5" PointX="8.25" PointY="15.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.KHACHHANG" Width="1.5" PointX="4.75" PointY="1.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.LICHSUTRANGTHAIDONHANG" Width="1.5" PointX="13.5" PointY="2.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.LOAISANPHAM" Width="1.5" PointX="3.75" PointY="8" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.NHACUNGCAP" Width="1.5" PointX="0.75" PointY="11.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.NHANVIEN" Width="1.5" PointX="0.75" PointY="6.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.PHIEUNHAP" Width="1.5" PointX="3" PointY="10.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.SANPHAM" Width="1.5" PointX="6" PointY="10.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.TAIKHOAN" Width="1.5" PointX="1.5" PointY="1.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.THUONGHIEU" Width="1.5" PointX="3.75" PointY="15.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.TONKHO" Width="1.5" PointX="10.625" PointY="18.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="QLHANGHOA_PHUKIEN_WEBModel.VAITRO" Width="1.5" PointX="1.5" PointY="15.625" IsExpanded="true" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_BIENSANPHAM_SANPHAM" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_CT_DONHANG_BIENSANPHAM" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_CT_GIOHANG_BIENSANPHAM" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_CT_PHIEUNHAP_BIENSANPHAM" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_DANHGIA_BIENSANPHAM" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_GIAODICHKHO_BIENSANPHAM" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_TONKHO_BIENSANPHAM" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_CT_DONHANG_DONHANG" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_CT_GIOHANG_GIOHANG" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_CT_PHIEUNHAP_PHIEU" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_DANHGIA_DONHANG" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_DANHGIA_KHACHHANG" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_DONHANG_KHACHHANG" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_DONHANG_NHANVIEN" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_GIAODICHKHO_DONHANG" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_LICHSU_DONHANG" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_GIAODICHKHO_NHANVIEN" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_GIAODICHKHO_PHIEUNHAP" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_GIOHANG_TAIKHOAN" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_KHACHHANG_TAIKHOAN" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_LICHSU_TAIKHOAN" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_SANPHAM_LOAI" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_PHIEUNHAP_NCC" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_SANPHAM_NCC" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_NHANVIEN_TAIKHOAN" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_PHIEUNHAP_NHANVIEN" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_SANPHAM_THUONGHIEU" ManuallyRouted="false" />
+        <AssociationConnector Association="QLHANGHOA_PHUKIEN_WEBModel.FK_TAIKHOAN_VAITRO" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>
