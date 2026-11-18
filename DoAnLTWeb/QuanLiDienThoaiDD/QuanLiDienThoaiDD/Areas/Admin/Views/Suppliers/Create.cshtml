@@ -1,0 +1,20 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.SupplierViewModel
+@{
+    ViewBag.Title = "Thêm nhà cung cấp";
+}
+
+<h1>Thêm nhà cung cấp</h1>
+@using (Html.BeginForm("Create", "Suppliers", new { area = "Admin" }, FormMethod.Post, null))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger", role = "alert" })
+    <div class="mb-3">
+        @Html.LabelFor(m => m.MaNCC, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.MaNCC, new { @class = "form-control", maxlength = "10", required = "required", aria_describedby = "supplier-code-help" })
+        <small id="supplier-code-help">Tối đa 10 ký tự: chữ không dấu, số, _ hoặc -. Mã không thể đổi sau khi tạo.</small>
+        @Html.ValidationMessageFor(m => m.MaNCC, "", new { @class = "text-danger" })
+    </div>
+    @Html.Partial("_Fields", Model)
+    <button type="submit" class="btn btn-primary">Thêm nhà cung cấp</button>
+    @Html.ActionLink("Về danh sách", "Index", null, new { @class = "btn btn-secondary" })
+}

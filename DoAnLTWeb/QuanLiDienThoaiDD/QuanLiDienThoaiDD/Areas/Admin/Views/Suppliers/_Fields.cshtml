@@ -1,0 +1,27 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.SupplierEditViewModel
+
+<div class="mb-3">
+    @Html.LabelFor(m => m.TenNCC, new { @class = "form-label" })
+    @Html.TextBoxFor(m => m.TenNCC, new { @class = "form-control", maxlength = "150", required = "required" })
+    @Html.ValidationMessageFor(m => m.TenNCC, "", new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(m => m.DiaChi, new { @class = "form-label" })
+    @Html.TextAreaFor(m => m.DiaChi, new { @class = "form-control", maxlength = "300", rows = "3" })
+    @Html.ValidationMessageFor(m => m.DiaChi, "", new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(m => m.DienThoai, new { @class = "form-label" })
+    @Html.TextBoxFor(m => m.DienThoai, new { @class = "form-control", type = "tel", maxlength = "15" })
+    @Html.ValidationMessageFor(m => m.DienThoai, "", new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(m => m.Email, new { @class = "form-label" })
+    @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", maxlength = "255" })
+    @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+</div>
+<div class="form-check mb-3">
+    @Html.CheckBoxFor(m => m.TrangThai, new { @class = "form-check-input", aria_describedby = "supplier-status-help" })
+    @Html.LabelFor(m => m.TrangThai, new { @class = "form-check-label" })
+    <p id="supplier-status-help">Bỏ chọn để ngừng sử dụng. Nhà cung cấp, sản phẩm và phiếu nhập liên quan được giữ nguyên.</p>
+</div>

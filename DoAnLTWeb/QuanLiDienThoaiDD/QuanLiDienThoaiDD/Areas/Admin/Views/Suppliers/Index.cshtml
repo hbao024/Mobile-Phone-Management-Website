@@ -1,0 +1,46 @@
+@model IEnumerable<QuanLiDienThoaiDD.Areas.Admin.ViewModels.SupplierViewModel>
+@{
+    ViewBag.Title = "Nhà cung cấp";
+}
+
+<h1>Nhà cung cấp</h1>
+@if (TempData["SupplierSuccess"] != null)
+{
+    <div class="alert alert-success" role="status">@TempData["SupplierSuccess"]</div>
+}
+<p>@Html.ActionLink("Thêm nhà cung cấp", "Create", null, new { @class = "btn btn-primary" })</p>
+<p>Chọn Chỉnh sửa để thay đổi thông tin hoặc ngừng sử dụng. Dữ liệu liên quan được giữ nguyên.</p>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <caption>Danh sách nhà cung cấp, bao gồm các nhà cung cấp đã ngừng sử dụng</caption>
+        <thead>
+            <tr>
+                <th scope="col">Mã nhà cung cấp</th>
+                <th scope="col">Tên nhà cung cấp</th>
+                <th scope="col">Địa chỉ</th>
+                <th scope="col">Điện thoại</th>
+                <th scope="col">Email</th>
+                <th scope="col">Trạng thái</th>
+                <th scope="col">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.MaNCC</td>
+                    <td>@item.TenNCC</td>
+                    <td style="white-space: pre-wrap; overflow-wrap: anywhere;">@item.DiaChi</td>
+                    <td>@item.DienThoai</td>
+                    <td style="overflow-wrap: anywhere;">@item.Email</td>
+                    <td>@(item.TrangThai ? "Đang sử dụng" : "Ngừng sử dụng")</td>
+                    <td>@Html.ActionLink("Chỉnh sửa", "Edit", new { id = item.MaNCC }, new { aria_label = "Chỉnh sửa " + item.TenNCC })</td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr><td colspan="7">Chưa có nhà cung cấp.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>
