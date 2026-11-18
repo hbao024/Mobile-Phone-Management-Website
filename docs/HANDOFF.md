@@ -8,13 +8,16 @@ Snapshot ngày 2026-11-18, múi giờ Asia/Saigon. Quy trình khôi phục conte
 |---|---|
 | Branch làm việc | `feature/dat/catalog-categories` |
 | Base / HEAD trước commit CAT-01 | `ff4736981e242df1f7e67df1e143b1383d3d0d88` |
+| Commit triển khai CAT-01 / HEAD trước cập nhật kết quả bàn giao | `9cb6414f393f368dd51a8aa1fa3286bbfd9d336e`, đã commit và push; remote đã xác minh lại |
 | Base PR | `integration/foundation` |
+| Draft PR | [#1 — CAT-01](https://github.com/hbao024/Mobile-Phone-Management-Website/pull/1), open, draft; base/head refs và SHA khớp lúc tạo |
 | Remote `integration/foundation` | `ff4736981e242df1f7e67df1e143b1383d3d0d88`, đã xác minh bằng `git ls-remote --heads origin` |
 | Nguồn Nhàn `origin/NguyenThanhNhan` | `a675fdcf712fcdb52f1d3a562c2a17857ee0850c`, remote đã xác minh |
 | Nguồn Tân `origin/DaoDuyTan` | `4990488c1e85dacdf762eab817f3cceeb183171c`, remote đã xác minh; Admin Tân chưa tích hợp |
 | Công việc có sẵn | `foundation-review.patch` untracked trước khi tạo branch; giữ nguyên, không stage/commit |
+| Working tree / staging sau push code | Chỉ còn patch có sẵn untracked / sạch; cập nhật kết quả bàn giao này được commit riêng |
 
-Branch CAT-01 chưa tồn tại local/remote lúc kiểm tra, đã tạo từ đúng SHA trên. Snapshot cũ mô tả HEAD trước commit tài liệu; đã đọc commit `ff47369` và xác nhận chỉ thêm năm file tài liệu so với nguồn Nhàn. Không reset hoặc ghi đè branch. SHA commit CAT-01 và trạng thái sau push phải đọc lại từ Git/PR, không gán trước SHA của commit đang chứa file này.
+Branch CAT-01 chưa tồn tại local/remote lúc kiểm tra, đã tạo từ đúng SHA trên. Snapshot cũ mô tả HEAD trước commit tài liệu; đã đọc commit `ff47369` và xác nhận chỉ thêm năm file tài liệu so với nguồn Nhàn. Không reset hoặc ghi đè branch. SHA commit cập nhật bàn giao và trạng thái sau push phải đọc lại từ Git/PR, không gán trước SHA của commit đang chứa file này.
 
 ## Nội dung và phạm vi
 
@@ -53,4 +56,4 @@ git diff --check
 - Chưa có database kiểm thử được chỉ định; không tạo/chạy SQL, seed hoặc ghi dữ liệu thật. Project thiếu `Web.config` gốc; `Application_Start` gọi `SeedData.EnsureDemoPasswords()`, vì vậy không khởi động ứng dụng trong phiên này.
 - Storefront hiện chưa lọc `LOAISANPHAM.TrangThai`; ngừng sử dụng trong CAT-01 không tự ẩn sản phẩm/loại ở cửa hàng. Cần phối hợp Nhàn trong phạm vi được duyệt riêng.
 - Schema chưa có concurrency token: sửa cùng bản ghi có thể ghi đè thay đổi của nhau; catch concurrency hiện chỉ xử lý lỗi EF phát hiện được như bản ghi bị xóa trước SaveChanges. Chưa có kiểm chứng đồng thời với SQL.
-- Commit/push branch và tạo Draft PR vào `integration/foundation` theo D-011. Kết quả cuối cùng xem Git và link PR trong báo cáo phiên. Không merge, không Ready, không CAT-02; chờ review CAT-01.
+- Đã commit/push code và tạo Draft PR #1 vào `integration/foundation` theo D-011. GitHub connector bị lỗi quyền 403 khi tạo PR; đã hoàn tất bằng GitHub API qua tài khoản Git hiện có, không lưu credential vào file/đầu ra. Cập nhật kết quả bàn giao này được commit/push riêng, không thay code đã kiểm chứng. Không merge, không Ready, không CAT-02; chờ review CAT-01.
