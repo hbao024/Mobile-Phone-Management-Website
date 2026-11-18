@@ -1,24 +1,29 @@
-# Bàn giao — CAT-07 / NgoThanhDat
+# Bàn giao — CAT-07 điều chỉnh tồn / NgoThanhDat
 
-Snapshot 2026-11-18 (Asia/Saigon). Quy trình tại [AGENTS.md](../AGENTS.md), phê duyệt phạm vi xem tại D-018 và mục ghi chung còn mở D-019 trong [decisions.md](decisions.md). Dừng review.
+Snapshot 2026-11-19 (Asia/Saigon). Quy trình [AGENTS.md](../AGENTS.md), phạm vi D-019 trong [decisions.md](decisions.md); chi tiết [contract](contracts/catalog-inventory.md#điều-chỉnh-kiểm-kê-và-inventoryservice-2026-11-19). Dừng để review.
 
-## Git và phạm vi
+## Git và file
 
-- Branch NgoThanhDat, HEAD trước CAT-07 `ef8c318eded16d23bc98888145e9f1d467cf8218`, local/remote khớp lúc bắt đầu. Đã đọc commit CAT-06/source để đối chiếu snapshot ghi SHA trước commit.
-- Đã fetch/kiểm tra remote DaoDuyTan `4990488c1e85dacdf762eab817f3cceeb183171c`, đọc Orders/StockReceipts và model tại SHA đó bằng git show, không checkout/merge hoặc sửa code Tân.
-- Thêm controller/ViewModel/view Inventory của Đạt; thêm link từ Products; csproj (Hoàng Bảo điều phối) chỉ đăng ký hai C# và một view. Thêm hai file tests/CAT-07; cập nhật ba tài liệu hiện có. Không thêm service/dependency/tài liệu mới, sửa Nhàn/Tân/schema/EDMX/generated/auth/layout hoặc ghi kho.
-- Giữ nguyên .vscode/settings.json và foundation-review.patch untracked có sẵn, không commit. Commit/push branch hiện tại theo chỉ đạo, không branch/PR/merge/force-push; SHA commit chứa file này đối chiếu Git/remote sau push trong kết quả phiên.
+- Branch NgoThanhDat; HEAD trước phiên `fc11d07ac2653d1ddc119aa3bf1fbc86f5b5d0fb`. Đã đọc commit xem tồn thực tế để đối chiếu snapshot ghi HEAD trước commit; local/remote cùng SHA lúc bắt đầu.
+- DaoDuyTan remote/fetch vẫn `4990488c1e85dacdf762eab817f3cceeb183171c`; đã đọc lại Orders.ProcessStatusTransition/Create và StockReceipts.ApplyStockReceiptToInventory/điểm gọi, SQL/EDMX/model dùng chung. Không sửa/merge/push branch Tân hoặc code Nhàn.
+- Đạt: thêm InventoryService, InventoryAdjustmentViewModel, Adjust/History views; sửa InventoryController/Index view. csproj (Bảo điều phối) chỉ đăng ký 2 C# + 2 view; cập nhật tests/CAT-07 và thêm AdjustmentChecks.cs. Cập nhật contract/decisions/HANDOFF và một câu kiến trúc về service mới. Không schema/EDMX/generated/dependency/config/seed.
+- Giữ nguyên .vscode/settings.json và foundation-review.patch untracked có sẵn, không commit. Commit/push NgoThanhDat theo chỉ đạo rồi đối chiếu SHA remote trong kết quả phiên; không branch/PR/merge/force-push.
 
-## Hoàn thiện và phần cần thống nhất
+## Chức năng đã triển khai
 
-- Admin Inventory chỉ GET/ADMIN; xem biến thể/SKU/sản phẩm/hai trạng thái, tồn/đang đặt/ngày cập nhật, gồm biến thể thiếu TONKHO. Tìm/lọc/phân trang server; không tạo tồn, ghi log hoặc gọi SaveChanges.
-- Chi tiết rà soát writer Tân và đầu vào/điểm tích hợp đề xuất tại [contract](contracts/catalog-inventory.md#xem-tồn-và-điểm-tích-hợp-cat-07), không coi tài liệu là phê duyệt writer.
-- Chưa triển khai tăng/giảm tồn. Nhóm cần thống nhất routine ghi chung cho nhập, hai nhánh xác nhận đơn, hoàn và điều chỉnh; quyền/actor/lý do, chính sách thiếu TONKHO/DangDat, chống lặp/concurrency và transaction tồn + log. Không có writer thứ hai trong Inventory.
+- Giữ xem/tìm/lọc/phân trang tồn. Thêm form điều chỉnh tăng/giảm nguyên dương, lý do bắt buộc, ADMIN + POST/anti-forgery; actor lấy từ tài khoản/nhân viên active, route xác định biến thể. Không bind số tồn trước/sau hoặc DangDat.
+- InventoryService nhận transaction từ caller, không tự commit; UPDATE có điều kiện tại SQL, OUTPUT trước/sau + ghi log trong transaction. Khóa range khi thiếu TONKHO; chỉ tạo khi tăng; giảm thiếu/âm và tăng tràn int bị từ chối, không sửa DangDat hiện hữu.
+- Token thao tác server ký, app lock theo GUID và dấu trong GhiChu để nhận lại kết quả gửi lặp/khước từ payload khác. Chỉ chống lặp hợp tác qua service, chưa có unique operation key trong schema; không tuyên bố idempotency toàn hệ thống. Lỗi commit không rõ giữ token/nội dung, đối soát lịch sử, không tự retry bằng mã mới.
+- History liệt kê giao dịch điều chỉnh gồm mã/ngày/loại/số lượng/trước/sau/NV/lý do, phân trang. Lỗi trả thông báo an toàn, không lộ SQL/connection.
 
-## Kiểm chứng và giới hạn
+## Kiểm chứng
 
-- VS MSBuild Debug solution thành công, chỉ MSB3247 binding hiện hữu.
-- tests/CAT-07/Run.ps1: **33/33** với dữ liệu giả 45 biến thể, thiếu/có TONKHO/tồn 0, tồn < đang đặt giữ nguyên dữ liệu, ngày cập nhật, hai trạng thái, tìm kiếm/lọc/phân trang/tham số sai/rỗng, không tạo/sửa tồn; metadata chỉ có GET Index/ADMIN, Razor parse/compile và kiểm source giữ tham số pager.
-- Trong bộ trên, **3** truy vấn EF6 thực sinh SQL offline gồm LEFT OUTER JOIN và phân trang với ba điều kiện bản ghi tồn. Dùng EDMX hiện tại, connection giả invalid.invalid và tắt initializer; không thực thi SQL hoặc startup/seed.
-- Hồi quy thực chạy CAT-01 **31/31**, CAT-02 **80/80**, CAT-03 **64/64**, CAT-04 **211/211**, CAT-05 **100/100** + preview DOM giả, CAT-06 **31/31**. Không coi metadata/compile/sinh SQL là kiểm thử HTTP hoặc DB.
-- Chưa có DB an toàn được chỉ định, thiếu Web.config gốc, startup gọi seed: không chạy IIS/app/SQL/seed. UI/auth HTTP, SQL thực thi/collation/query plan và concurrency/transaction liên module **chưa nghiệm thu**. Đối chiếu Tân chỉ là review source tại SHA ghi trên, chưa xác nhận tích hợp/runtime.
+- VS MSBuild Debug solution thành công; chỉ MSB3247 binding hiện hữu.
+- tests/CAT-07/Run.ps1: **37** kiểm tra xem tồn/SQL sinh offline/Razor/metadata + **37** kiểm tra điều chỉnh (validation, token/actor controller, history, SQL source, ADO mô phỏng). Có tăng/giảm về 0, thiếu tồn/missing, số sai/overflow, log failure + outer rollback mô phỏng, replay/payload conflict. Không coi mock ADO là thực thi batch SQL hoặc test SQL transaction/concurrency.
+- Hồi quy thực chạy CAT-01 **31/31**, CAT-02 **80/80**, CAT-03 **64/64**, CAT-04 **211/211**, CAT-05 **100/100** + preview DOM giả, CAT-06 **31/31**.
+
+## Phối hợp và giới hạn
+
+- Tân: chuyển đúng các điểm ghi trong contract sang service cùng transaction, xử lý EF tracked TONKHO, thống nhất DangDat giữa xác nhận thường/xác nhận ngay, trạng thái hoàn và chống áp lại theo chứng từ. API lõi có NHAP/BAN/TRA_HANG nhưng **chưa tích hợp/kiểm thử Tân**, không thay nghiệp vụ của Tân trong phiên này.
+- Bảo: phối hợp cấu hình DB/IIS/machine key, mapping tài khoản–NV, quyền SQL/app lock, DB test an toàn; xem xét operation key/unique constraint nếu nhóm duyệt schema riêng. D-019 còn OPEN cho cơ chế liên module, không phê duyệt toàn bộ D-008/D-010.
+- Chưa có DB test an toàn được chỉ định; thiếu Web.config gốc, startup gọi seed: không chạy app/IIS/SQL/seed. **Chưa nghiệm thu** batch SQL thực tế, hai context/transaction cạnh tranh, rollback/unknown commit SQL, UI/HTTP auth/CSRF và tích hợp liên module. Writer cũ Tân còn đọc-rồi-gán, nên chưa bảo đảm chống lost update khi cùng ghi. Xem contract về lock/replay scan, connection SET XACT_ABORT, transaction và schema.

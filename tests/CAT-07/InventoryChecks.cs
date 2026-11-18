@@ -27,8 +27,10 @@ class InventoryChecks
     static InventoryRowViewModel[] Rows(ActionResult result) { return ((System.Collections.Generic.IEnumerable<InventoryRowViewModel>)((ViewResult)result).Model).ToArray(); }
     static void CompileView(string project)
     {
-        var file = Path.Combine(project, "Areas/Admin/Views/Inventory/Index.cshtml");
-        var host = new MvcWebPageRazorHost("~/Areas/Admin/Views/Inventory/Index.cshtml", file);
+        foreach (var view in new[] { "Index", "Adjust", "History" })
+        {
+        var file = Path.Combine(project, "Areas/Admin/Views/Inventory", view + ".cshtml");
+        var host = new MvcWebPageRazorHost("~/Areas/Admin/Views/Inventory/" + view + ".cshtml", file);
         foreach (var ns in new[] { "System", "System.Linq", "System.Collections.Generic", "System.Web.Mvc", "System.Web.Mvc.Html" }) host.NamespaceImports.Add(ns);
         using (var reader = File.OpenText(file)) using (var compiler = new CSharpCodeProvider())
         {
@@ -41,7 +43,8 @@ class InventoryChecks
             if (result.Errors.HasErrors) throw new Exception(string.Join(Environment.NewLine, result.Errors.Cast<CompilerError>().Select(x => x.ToString())));
             Check(!result.Errors.HasErrors, "Razor compile inventory");
         }
-        var links = File.ReadAllLines(file).Where(x => x.Contains("page =")).ToArray();
+        }
+        var links = File.ReadAllLines(Path.Combine(project, "Areas/Admin/Views/Inventory/Index.cshtml")).Where(x => x.Contains("page =")).ToArray();
         Check(links.Length == 4 && links.All(x => new[] { "q =", "state =", "productState =", "stock =" }.All(x.Contains)), "pager route declarations preserve filters");
     }
     public static void Main(string[] args)
@@ -81,7 +84,7 @@ class InventoryChecks
         var auth = (AuthorizeAttribute)Attribute.GetCustomAttribute(typeof(InventoryController), typeof(AuthorizeAttribute));
         Check(auth != null && auth.Roles == "ADMIN", "ADMIN metadata");
         var actions = typeof(InventoryController).GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
-        Check(actions.Length == 1 && actions[0].Name == "Index" && Attribute.IsDefined(actions[0], typeof(HttpGetAttribute)), "only GET Index action; no stock mutation endpoint");
+        Check(actions.Length == 4 && actions.Count(x => Attribute.IsDefined(x, typeof(HttpGetAttribute))) == 3 && actions.Count(x => Attribute.IsDefined(x, typeof(HttpPostAttribute)) && Attribute.IsDefined(x, typeof(ValidateAntiForgeryTokenAttribute))) == 1, "three GET actions and one POST with anti-forgery");
         Database.SetInitializer<QLHANGHOA_PHUKIEN_WEBEntities>(null);
         using (var real = new QLHANGHOA_PHUKIEN_WEBEntities()) using (var c = Controller(real))
         foreach (var stock in new[] { "", "missing", "present" })
@@ -91,6 +94,7 @@ class InventoryChecks
             Check(sql.Contains("LEFT OUTER JOIN") && sql.Contains("TONKHO") && sql.Contains("ORDER BY"), "EF6 offline SQL generation with left join and stock filter " + stock);
         }
         CompileView(args[0]);
+        AdjustmentChecks.Run();
         Console.WriteLine("Completed " + checks + " checks: fake data, offline EF6 SQL, Razor and metadata. SQL execution/HTTP/UI/concurrency UNVERIFIED.");
     }
 }

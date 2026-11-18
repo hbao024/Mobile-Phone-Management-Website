@@ -62,6 +62,6 @@ Phân công điều phối dưới đây là nội dung đề xuất liên quan 
 
 Theo D-003, source ứng viên chứa chức năng khách hàng; module Admin từ nguồn Tân sẽ được kế thừa ở gói tích hợp riêng. Không coi các module đó đã được nhập hoặc nghiệm thu. Các ref và SHA nguồn nằm duy nhất trong [HANDOFF](HANDOFF.md).
 
-Các điểm phải hợp nhất ở giai đoạn sau: `.csproj`, config gốc, Account/Dashboard, hai layout, CSS và seed. Không mặc định chọn toàn bộ hành vi của một branch chỉ vì chọn solution của branch đó. D-004 điều chỉnh mức độ thay đổi kiến trúc; hiện chưa bổ sung service.
+Các điểm phải hợp nhất ở giai đoạn sau: `.csproj`, config gốc, Account/Dashboard, hai layout, CSS và seed. Không mặc định chọn toàn bộ hành vi của một branch chỉ vì chọn solution của branch đó. D-004 điều chỉnh mức độ thay đổi kiến trúc; InventoryService được bổ sung trong phạm vi D-019, chưa tích hợp các writer của Tân.
 
 Contract chuyên môn nằm tại [catalog-inventory.md](contracts/catalog-inventory.md). Hướng dẫn chạy trong README cũ cần review trước khi sử dụng: config gốc chưa được theo dõi ở ứng viên, startup gọi seed, SQL gốc có thao tác phá hủy. Gói tài liệu không sửa các điểm này và chưa xác minh runtime.

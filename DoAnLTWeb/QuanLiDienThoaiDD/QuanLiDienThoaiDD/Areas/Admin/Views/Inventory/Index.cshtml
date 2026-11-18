@@ -1,7 +1,7 @@
 @model IEnumerable<QuanLiDienThoaiDD.Areas.Admin.ViewModels.InventoryRowViewModel>
 @{ ViewBag.Title = "Tồn kho"; }
 <h1>Tồn kho theo biến thể</h1>
-<p>Thông tin chỉ đọc. Chưa có bản ghi tồn khác với tồn bằng 0. Số lượng đang đặt hiển thị theo dữ liệu hiện có; chưa dùng để tính số lượng khả dụng.</p>
+<p>Chưa có bản ghi tồn khác với tồn bằng 0. Số lượng đang đặt hiển thị theo dữ liệu hiện có; chưa dùng để tính số lượng khả dụng.</p>
 @using (Html.BeginForm("Index", "Inventory", FormMethod.Get))
 {
     <label for="q">Mã biến thể, SKU, mã hoặc tên sản phẩm</label>
@@ -25,7 +25,7 @@
     @foreach (var row in Model)
     {
         <tr>
-            <td>@row.MaBienSanPham / @row.SKU</td>
+            <td>@row.MaBienSanPham / @row.SKU<br />@Html.ActionLink("Điều chỉnh", "Adjust", new { id = row.MaBienSanPham }) | @Html.ActionLink("Lịch sử", "History", new { id = row.MaBienSanPham })</td>
             <td>@row.MaSanPham — @row.TenSanPham</td>
             <td>@(row.VariantActive ? "Đang kinh doanh" : "Ngừng kinh doanh") / @(row.ProductActive ? "Đang kinh doanh" : "Ngừng kinh doanh")</td>
             <td>@(row.SoLuongTon.HasValue ? "Đã có" : "Chưa có TONKHO")</td>

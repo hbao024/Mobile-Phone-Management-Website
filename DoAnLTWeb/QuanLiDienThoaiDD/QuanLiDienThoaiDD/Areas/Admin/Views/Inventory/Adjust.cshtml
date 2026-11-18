@@ -1,0 +1,18 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.InventoryAdjustmentViewModel
+@{ ViewBag.Title = "Điều chỉnh tồn kho"; }
+<h1>Điều chỉnh tồn kho: @ViewBag.SKU</h1>
+<p>Mã biến thể: @ViewBag.VariantId. Chỉ nhập chênh lệch kiểm kê; số lượng đang đặt được giữ nguyên. Thiếu bản ghi tồn chỉ được tạo khi điều chỉnh tăng.</p>
+@using (Html.BeginForm("Adjust", "Inventory", new { id = (string)ViewBag.VariantId }, FormMethod.Post, null))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(false, "", new { @class = "text-danger", role = "alert" })
+    @Html.HiddenFor(m => m.OperationToken)
+    <label for="Type">Loại điều chỉnh</label>
+    @Html.DropDownListFor(m => m.Type, new[] { new SelectListItem { Value = "DIEU_CHINH_TANG", Text = "Tăng tồn" }, new SelectListItem { Value = "DIEU_CHINH_GIAM", Text = "Giảm tồn" } })
+    <label for="Quantity">Số lượng</label>
+    @Html.TextBoxFor(m => m.Quantity, new { type = "number", min = "1", max = "2147483647", step = "1", required = "required" })
+    <label for="Reason">Lý do kiểm kê</label>
+    @Html.TextAreaFor(m => m.Reason, new { maxlength = "450", required = "required" })
+    <button type="submit" class="btn btn-primary">Ghi điều chỉnh</button>
+}
+<p>@Html.ActionLink("Xem lịch sử điều chỉnh", "History", new { id = (string)ViewBag.VariantId }) | @Html.ActionLink("Về tồn kho", "Index")</p>
