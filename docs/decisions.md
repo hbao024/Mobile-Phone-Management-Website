@@ -6,7 +6,7 @@
 - **PROPOSED**: phương án kỹ thuật để review, chưa được phép triển khai chỉ nhờ có mặt trong tài liệu.
 - **OPEN**: cần nhóm xác nhận chính sách hoặc trách nhiệm.
 
-Nguồn duyệt hiện tại là chỉ đạo người dùng trong hội thoại FOUNDATION-01, FOUNDATION-02A và FOUNDATION-02B.1. Hai báo cáo đầu chưa được lưu thành artifact trong repository; không coi là tài liệu ký duyệt có sẵn. Mọi thay đổi trạng thái cần ghi căn cứ/người duyệt tại đây.
+Nguồn duyệt hiện tại là chỉ đạo người dùng trong hội thoại FOUNDATION-01, FOUNDATION-02A, FOUNDATION-02B.1 và CAT-02. Hai báo cáo đầu chưa được lưu thành artifact trong repository; không coi là tài liệu ký duyệt có sẵn. Mọi thay đổi trạng thái cần ghi căn cứ/người duyệt tại đây.
 
 | Mã | Quyết định / liên kết nội dung | Trạng thái | Căn cứ và điều kiện xem xét lại |
 |---|---|---|---|
@@ -20,5 +20,6 @@ Nguồn duyệt hiện tại là chỉ đạo người dùng trong hội thoại
 | D-008 | Chính sách catalog, giá, giữ hàng và hoàn kho tại [contract](contracts/catalog-inventory.md#nội-dung-đề-xuất-cho-d-008) | OPEN | Nhóm cần chốt trước triển khai; chưa chọn giữ hàng, thời điểm giá hay điều kiện hoàn khi đang giao |
 | D-009 | Ma trận quyền và ownership điều phối tại [kiến trúc](architecture.md#ownership-file-dùng-chung) | OPEN | Phân công chức năng có nguồn tham khảo; quyền nghiệp vụ và người điều phối cần xác nhận |
 | D-010 | Concurrency, chống lặp và sinh mã tại [contract](contracts/catalog-inventory.md#nội-dung-đề-xuất-cho-d-010) | PROPOSED | Cần review schema, điểm gọi và kiểm chứng liên module trước triển khai |
+| D-012 | Triển khai CAT-02 quản lý thương hiệu trong Admin bằng `THUONGHIEU`/DbContext hiện có, role `ADMIN`; ngừng sử dụng qua sửa trạng thái, không xóa cứng; `LogoUrl` là đường dẫn được kiểm tra, chưa upload | APPROVED | Chỉ đạo CAT-02 của người dùng ngày 2026-11-18 sau review tĩnh CAT-01: branch riêng từ `integration/foundation`, kiểm chứng, commit, push, tạo Draft PR vào nền rồi dừng review. Không merge CAT-01/CAT-02; không đổi schema/EDMX, storefront, authentication hoặc layout chung; `.csproj` chỉ đăng ký file mới. Không chạy SQL/seed khi chưa có database được chỉ định. Không phê duyệt toàn bộ D-008/D-009/D-010; D-011 thuộc PR CAT-01 độc lập, không kế thừa commit chưa merge |
 
 Điểm review tiếp theo: xử lý các mục OPEN/PROPOSED cần cho gói tích hợp kế tiếp; không coi kết thúc gói tài liệu là phê duyệt các mục đó.

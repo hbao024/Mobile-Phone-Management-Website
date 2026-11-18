@@ -1,50 +1,61 @@
-# Bàn giao FOUNDATION-02B.1
+# Bàn giao CAT-02 — Quản lý thương hiệu
 
-Snapshot ngày 2026-11-18, múi giờ Asia/Saigon. Quy trình khôi phục context nằm tại [AGENTS.md](../AGENTS.md); trạng thái duyệt nằm tại [decisions.md](decisions.md).
+Snapshot ngày 2026-11-18, múi giờ Asia/Saigon. Quy trình khôi phục tại [AGENTS.md](../AGENTS.md); phạm vi được duyệt tại D-012 trong [decisions.md](decisions.md).
 
 ## Snapshot Git
 
-| Đối tượng | Giá trị tại thời điểm kiểm tra |
+| Đối tượng | Giá trị lúc kiểm tra trước commit CAT-02 |
 |---|---|
-| Branch làm việc | `integration/foundation` |
-| SHA nền Nhàn / HEAD trước commit tài liệu | `a675fdcf712fcdb52f1d3a562c2a17857ee0850c` |
-| Ref nguồn Nhàn | `origin/NguyenThanhNhan` |
-| SHA nguồn Admin Tân | `4990488c1e85dacdf762eab817f3cceeb183171c` |
-| Ref nguồn Tân | `origin/DaoDuyTan` |
-| HEAD và main trước tạo branch | `313c7d20935f08c284261d20aaa4b675ca05773a` |
-| Working tree / staging trước tạo branch | Sạch / sạch; không có file untracked |
+| Branch | `feature/dat/catalog-brands` |
+| Base / HEAD trước commit | `ff4736981e242df1f7e67df1e143b1383d3d0d88` |
+| Remote `integration/foundation` | Cùng SHA trên, đã xác minh bằng `git ls-remote --heads origin` và fetch trước khi tạo branch; kiểm tra lại trước commit vẫn khớp |
+| Branch CAT-01 lúc bắt đầu | `feature/dat/catalog-categories` / `a4a44ce1de96952ac5615060fa2d5efa0695587f`, remote khớp |
+| CAT-01 | [Draft PR #1](https://github.com/hbao024/Mobile-Phone-Management-Website/pull/1), open, draft, chưa merge; đã đọc lại metadata GitHub |
+| Công việc có sẵn/ngoài phạm vi | `foundation-review.patch` untracked có sẵn; `.vscode/settings.json` untracked xuất hiện trong phiên, không do CAT-02 tạo; giữ nguyên, không stage/commit |
+| Base PR CAT-02 | `integration/foundation`; trạng thái commit/push/PR cập nhật sau khi thực hiện |
 
-HEAD sau commit phải đọc bằng `git rev-parse HEAD`; file này không chứa SHA của chính commit tạo ra nó. Các SHA remote là snapshot, cần đọc lại nếu nhiệm vụ tiếp theo phụ thuộc remote.
+Lúc bắt đầu, working tree/staging sạch ngoài patch có sẵn. Snapshot CAT-01 mô tả HEAD trước cập nhật tài liệu; đã đọc commit `a4a44ce` chỉ sửa HANDOFF. Tạo branch từ nền đã fetch, không cherry-pick/merge CAT-01. Chỉ tham khảo tổ chức controller/ViewModels/views và harness bằng `git show`; file ứng dụng/test CAT-02 có tên/đường dẫn riêng, không phụ thuộc CAT-01. Không reset hoặc sửa patch/editor settings.
 
-## Nhiệm vụ và phạm vi
+SHA của commit chứa tài liệu này phải đọc lại từ Git; không tự gán SHA cho chính commit đang chuẩn bị.
 
-Tạo bộ tài liệu nền để chuyển chat và chuẩn bị tích hợp. Diff được phép chỉ gồm năm file mới:
+## Nội dung triển khai
 
-```text
-AGENTS.md
-docs/architecture.md
-docs/contracts/catalog-inventory.md
-docs/decisions.md
-docs/HANDOFF.md
+- Truy cập trực tiếp `/Admin/Brands` với role `ADMIN`, dùng layout Admin hiện có, không thêm menu chung.
+- Danh sách gồm mã, tên, mô tả, đường dẫn logo và cả hai trạng thái. Razor encode dữ liệu; logo hiển thị dạng văn bản, không tải/đọc/preview ảnh.
+- Tạo mã/tên/mô tả/logo/trạng thái; form mới mặc định hoạt động. Sửa tên/mô tả/logo/trạng thái; mã giữ bất biến. Bỏ chọn “Đang sử dụng” để ngừng sử dụng; không có endpoint xóa cứng hoặc sửa quan hệ sản phẩm.
+- ViewModel riêng chống overposting; hai POST có Anti-Forgery Token. Validation bắt buộc mã/tên, giới hạn SQL/EDMX 10/100/500/500; mã mới dùng chữ ASCII/số/`_`/`-`. Trim đầu/cuối trước lưu; mô tả/logo trống lưu null.
+- `LogoUrl` tùy chọn: HTTP/HTTPS không kèm thông tin đăng nhập, hoặc đường dẫn `/images/...`, `~/images/...`; chặn scheme khác, protocol-relative, backslash, ký tự trắng/control thô, đường dẫn lùi và control mã hóa ở đường dẫn nội bộ. Không kiểm tra ảnh có tồn tại/nội dung/MIME vì không truy cập ảnh hay upload.
+- Kiểm mã/tên trùng bằng truy vấn EF để SQL áp dụng collation; bao gồm thương hiệu ngừng sử dụng. Loại trừ chính bản ghi khi sửa. Unique constraint SQL vẫn quyết định lúc tranh chấp; bắt lỗi unique 2601/2627 và lỗi lưu EF, trả thông báo an toàn. Không tìm thấy bản ghi trả 404.
+- Dùng entity `THUONGHIEU` và DbSet generated `THUONGHIEUx` trong context hiện có. Không sửa entity/context/EDMX, SQL, seed, dependency, startup, auth, storefront hoặc layout.
+- `.csproj` thuộc Hoàng Bảo điều phối: chỉ thêm đăng ký hai C# và bốn Razor view. Harness riêng `tests/CAT-02` dùng lại cách kiểm CAT-01, không thêm framework/package hoặc sửa code ứng dụng để tiêm context.
+
+## Bằng chứng kiểm chứng
+
+Chạy tại repository root:
+
+```powershell
+$msbuild = 'C:/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/MSBuild.exe'
+& $msbuild DoAnLTWeb/QuanLiDienThoaiDD/QuanLiDienThoaiDD.sln /t:Restore /p:RestorePackagesConfig=true /v:minimal /nologo
+& $msbuild DoAnLTWeb/QuanLiDienThoaiDD/QuanLiDienThoaiDD.sln /t:Build /p:Configuration=Debug /v:minimal /nologo
+powershell -NoProfile -ExecutionPolicy Bypass -File tests/CAT-02/Run.ps1
+git diff --check
 ```
 
-Source vẫn ở cấu trúc ứng viên; module Admin Tân chưa được nhập. Không sửa code, config, EDMX hoặc SQL, không chuyển thư mục. Không merge/push, không bắt đầu FOUNDATION tiếp theo.
+| Lớp kiểm chứng | Kết quả thực tế |
+|---|---|
+| Restore | Thành công bằng packages.config hiện có; không thêm dependency |
+| Build Debug / .NET Framework 4.7.2 | Thành công bằng VS MSBuild; cảnh báo MSB3247 version binding hiện hữu cho Microsoft.Web.Infrastructure, Newtonsoft.Json, WebGrease, Antlr3.Runtime; không sửa config chung |
+| Harness dữ liệu giả | 61 kiểm tra thành công, không chạy Application_Start hoặc SQL; dùng subclass context/DbSet giả trong tiến trình test |
+| Binding/validation và controller | Tạo/sửa, thiếu/trắng tên, thiếu/sai/trùng mã, tên trùng thương hiệu ngừng sử dụng, vượt độ dài/đúng biên, URL hợp lệ/không hợp lệ, xóa logo về null, GET/POST bản ghi không tồn tại, đọc form sửa, hai chiều trạng thái, giữ mã và quan hệ khi overpost, danh sách hai trạng thái, thông báo thành công/lỗi lưu/lỗi mất bản ghi lúc lưu |
+| Metadata và Razor | ADMIN, hai POST có anti-forgery, không Delete; parse/compile độc lập cả bốn Razor view trong 61 kiểm tra; chưa render HTTP/UI |
+| Diff/staging | Kiểm tra phạm vi trước commit; loại patch và `.vscode/` ngoài phạm vi khỏi staging |
+| UI, HTTP authentication/CSRF | CHƯA CHẠY; reflection metadata không chứng minh middleware/filter chạy đúng qua HTTP |
+| SQL/persistence/collation/unique race/concurrency | CHƯA CHẠY; LINQ to Objects và SaveChanges giả không mô phỏng SQL collation, constraint, transaction hay lưu bền |
 
-## Tiến độ và kiểm chứng
+## Giới hạn và điểm dừng
 
-- Đã kiểm tra Git sạch và xác minh SHA hai remote bằng `git ls-remote --heads origin`.
-- Đã kiểm tra tên branch chưa tồn tại ở local/remote rồi tạo từ SHA nền cố định.
-- Đã đọc instruction và kiểm tra source context/dependency; kết luận giới hạn ở kiểm tra tĩnh.
-- Đã tạo đúng năm tài liệu; kiểm tra bằng Python đối chiếu danh sách thay đổi với allowlist và HEAD nền: PASS.
-- Đã kiểm tra các liên kết file và anchor nội bộ trong cả năm tài liệu: PASS.
-- Đã quét năm tài liệu bằng các mẫu dò phép gán mật khẩu, connection string và giá trị mật khẩu demo đã biết: không có kết quả khớp. Đây không phải audit bí mật toàn repository.
-- Đã stage đúng năm file mới, kiểm `git diff --cached --check` thành công và review diff; không có file hiện hữu bị sửa. Snapshot này được ghi trước commit; cần kiểm lại status sau commit.
-- Chưa chạy build, UI, SQL, seed hoặc thử nghiệm concurrency; không có bằng chứng runtime.
-
-Nguồn Admin có thể đọc không đổi branch bằng `git show <ref-nguồn-Tân>:QuanLiDienThoaiDD/Areas/Admin/Controllers/OrdersController.cs` và đường dẫn tương tự tới `StockReceiptsController.cs`. Không sao chép dữ liệu nhạy cảm khi đọc source.
-
-## Điểm tiếp tục
-
-Commit dự kiến: `docs: establish foundation architecture and handoff`. Xác minh commit thực tế bằng `git log -1 --format=fuller`, phạm vi bằng `git diff --name-status <SHA-nền> HEAD`, và trạng thái sau commit bằng `git status --short --branch`. Kết quả sau commit nằm trong Git và báo cáo bàn giao, không tự gán trước SHA/kết quả vào snapshot.
-
-Sau kiểm chứng và commit gói tài liệu, dừng để review. Bước kế tiếp cần chỉ đạo mới; các mục còn mở được quản lý tại sổ quyết định. Khi đổi chat, kiểm tra HEAD/status thực tế thay vì mặc định snapshot trước commit là trạng thái hiện tại.
+- Chưa có database kiểm thử được chỉ định. Không chạy SQL, seed hoặc khởi động ứng dụng: project thiếu Web.config gốc, startup hiện gọi `SeedData.EnsureDemoPasswords()`.
+- Không có concurrency token trong schema: hai người sửa cùng thương hiệu có thể ghi đè nhau; catch concurrency chỉ xử lý trường hợp EF phát hiện như bản ghi biến mất khi lưu. Không khẳng định đã xử lý lost update.
+- Storefront hiện lọc trạng thái sản phẩm, chưa lọc `THUONGHIEU.TrangThai`. Ngừng sử dụng trong Admin chưa tự ẩn sản phẩm tại cửa hàng; phần storefront thuộc phạm vi khác.
+- Khi tích hợp sau review, `.csproj`, HANDOFF và decisions là file dùng chung với CAT-01, cần giữ cả hai gói khi giải quyết diff; không lấy nguyên file từ một branch đè branch còn lại.
+- Hoàn tất commit/push và Draft PR theo D-012 rồi dừng để ChatGPT review. Không merge/Ready CAT-01 hoặc CAT-02, không bắt đầu gói tiếp theo.
