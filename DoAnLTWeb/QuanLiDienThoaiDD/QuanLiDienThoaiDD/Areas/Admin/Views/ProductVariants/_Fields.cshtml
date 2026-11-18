@@ -33,9 +33,59 @@
 <div class="mb-3">
     @Html.LabelFor(m => m.HinhAnhUrl, new { @class = "form-label" })
     @Html.TextBoxFor(m => m.HinhAnhUrl, new { @class = "form-control", maxlength = "500" })
-    <small>Để trống hoặc nhập /images/ten-anh.jpg. Không tải ảnh lên ở đây.</small>
+    <small>Đường dẫn ảnh có sẵn /images/...; ảnh mới tải lên sẽ thay đường dẫn này. Để trống để bỏ đường dẫn.</small>
     @Html.ValidationMessageFor(m => m.HinhAnhUrl, "", new { @class = "text-danger" })
 </div>
+@if (!string.IsNullOrWhiteSpace((string)ViewBag.CurrentImageUrl))
+{
+    <div class="mb-3">
+        <p>Ảnh hiện tại</p>
+        <img src="@Url.Content("~" + (string)ViewBag.CurrentImageUrl)" alt="Ảnh hiện tại của biến thể" style="max-width: 240px; max-height: 240px;" />
+    </div>
+}
+<div class="mb-3">
+    @Html.LabelFor(m => m.ImageUpload, new { @class = "form-label" })
+    <input type="file" id="ImageUpload" name="ImageUpload" accept="image/jpeg,image/png" class="form-control" aria-describedby="image-help" />
+    <small id="image-help">JPEG/PNG, tối đa 2 MiB, 4096 pixel mỗi chiều và 16 triệu pixel. Nếu lưu lỗi, vui lòng chọn lại file.</small>
+    @Html.ValidationMessageFor(m => m.ImageUpload, "", new { @class = "text-danger" })
+    <p id="image-preview-label" hidden>Ảnh mới xem trước (chưa lưu)</p>
+    <img id="image-preview" alt="Ảnh mới xem trước" hidden style="max-width: 240px; max-height: 240px;" />
+</div>
+<div class="form-check mb-3">
+    @Html.CheckBoxFor(m => m.RemoveImage, new { @class = "form-check-input" })
+    @Html.LabelFor(m => m.RemoveImage, new { @class = "form-check-label" })
+    <small>Chỉ bỏ liên kết ảnh của biến thể; giữ file cũ để bảo vệ các nơi còn dùng ảnh.</small>
+</div>
+<script>
+(function () {
+    var input = document.getElementById('ImageUpload');
+    var remove = document.getElementById('RemoveImage');
+    var preview = document.getElementById('image-preview');
+    var label = document.getElementById('image-preview-label');
+    var objectUrl;
+    function clearPreview() {
+        preview.hidden = label.hidden = true;
+        preview.removeAttribute('src');
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        objectUrl = null;
+    }
+    input.addEventListener('change', function () {
+        clearPreview();
+        var file = input.files[0];
+        if (!file) return;
+        remove.checked = false;
+        if (!window.URL || !URL.createObjectURL || file.size > 2097152 || !/^image\/(jpeg|png)$/.test(file.type)) return;
+        objectUrl = URL.createObjectURL(file);
+        preview.src = objectUrl;
+        preview.hidden = label.hidden = false;
+    });
+    remove.addEventListener('change', function () {
+        if (remove.checked) { input.value = ''; clearPreview(); }
+    });
+    preview.addEventListener('error', clearPreview);
+    window.addEventListener('pagehide', clearPreview);
+}());
+</script>
 <div class="form-check mb-3">
     @Html.CheckBoxFor(m => m.TrangThai, new { @class = "form-check-input" })
     @Html.LabelFor(m => m.TrangThai, new { @class = "form-check-label" })

@@ -154,6 +154,7 @@
     <Compile Include="Areas\Admin\ViewModels\SupplierViewModels.cs" />
     <Compile Include="Areas\Admin\Controllers\ProductsController.cs" />
     <Compile Include="Areas\Admin\Controllers\ProductVariantsController.cs" />
+    <Compile Include="Areas\Admin\VariantImageStorage.cs" />
     <Compile Include="Areas\Admin\ViewModels\ProductViewModels.cs" />
     <Compile Include="Areas\Admin\ViewModels\DashboardViewModel.cs" />
     <Compile Include="Global.asax.cs">

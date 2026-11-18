@@ -2,7 +2,7 @@
 @{ ViewBag.Title = "Thêm biến thể"; }
 <h1>Thêm biến thể: @ViewBag.ProductName</h1>
 <p>Mã sản phẩm: @ViewBag.ProductId</p>
-@using (Html.BeginForm("Create", "ProductVariants", new { area = "Admin", productId = (string)ViewBag.ProductId }, FormMethod.Post, null))
+@using (Html.BeginForm("Create", "ProductVariants", new { area = "Admin", productId = (string)ViewBag.ProductId }, FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     @Html.AntiForgeryToken()
     @Html.ValidationSummary(true, "", new { @class = "text-danger", role = "alert" })

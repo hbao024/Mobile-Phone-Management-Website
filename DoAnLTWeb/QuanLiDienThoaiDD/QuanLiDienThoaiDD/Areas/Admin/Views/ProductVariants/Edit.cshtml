@@ -2,7 +2,7 @@
 @{ ViewBag.Title = "Chỉnh sửa biến thể"; }
 <h1>Chỉnh sửa biến thể: @ViewBag.ProductName</h1>
 <p>Mã biến thể: <strong>@ViewBag.VariantId</strong>. Sản phẩm: <strong>@ViewBag.ProductId</strong> (không thể thay đổi).</p>
-@using (Html.BeginForm("Edit", "ProductVariants", new { area = "Admin", productId = (string)ViewBag.ProductId, id = (string)ViewBag.VariantId }, FormMethod.Post, null))
+@using (Html.BeginForm("Edit", "ProductVariants", new { area = "Admin", productId = (string)ViewBag.ProductId, id = (string)ViewBag.VariantId }, FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     @Html.AntiForgeryToken()
     @Html.ValidationSummary(true, "", new { @class = "text-danger", role = "alert" })

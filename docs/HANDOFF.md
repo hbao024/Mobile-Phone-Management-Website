@@ -1,28 +1,23 @@
-# Bàn giao — CAT-04 / NgoThanhDat
+# Bàn giao — CAT-05 / NgoThanhDat
 
-Snapshot 2026-11-18 (Asia/Saigon). Quy trình: [AGENTS.md](../AGENTS.md); phạm vi tại D-015 trong [decisions.md](decisions.md), chi tiết tại [contract](contracts/catalog-inventory.md#biên-quản-lý-catalog-cat-04). Dừng để ChatGPT review.
+Snapshot 2026-11-18 (Asia/Saigon). Quy trình: [AGENTS.md](../AGENTS.md); phạm vi tại D-016 trong [decisions.md](decisions.md), chi tiết tại [contract](contracts/catalog-inventory.md#ảnh-biến-thể-cat-05). Dừng để review, không chuyển bước tiếp theo.
 
 ## Git và phạm vi
 
-- Làm trên `NgoThanhDat`; HEAD trước CAT-04 `fea07e46b7554ea3f2db6cee5a444bff7ed15bfb`, local/remote khớp lúc bắt đầu. Snapshot CAT-03 mô tả HEAD trước commit; đã đối chiếu commit CAT-03 thực tế và source trước tiếp tục.
-- Không tạo branch/PR, merge, force-push hoặc sửa main/nền/branch Nhàn/Tân. `foundation-review.patch` và `.vscode/settings.json` untracked có sẵn được giữ nguyên, không commit.
-- Hai controller, một file ViewModels, tám Razor view riêng cho Products/ProductVariants, hai file harness CAT-04. File chung `.csproj` chỉ thêm 3 C# + 8 view để compile/package (Hoàng Bảo điều phối); contract ghi biên ảnh/liên kết/giá/tồn để không nhập nhằng với đề xuất chưa duyệt; decisions ghi D-015, HANDOFF cập nhật phiên này.
-- Không sửa CAT-01/02/03, SQL/schema/EDMX/entity/context generated, authentication, storefront, layout, module Tân hoặc dependency. SHA CAT-04 sau commit/push đọc lại từ Git, không tự gán SHA cho commit chứa file này.
+- Tiếp tục `NgoThanhDat`, HEAD lúc kiểm tra trước commit CAT-05: `943ebffba6357f4664e317cef08ff95c2b198346` (commit CAT-04). Đã đọc commit/source thực tế và xác minh `git ls-remote --heads origin NgoThanhDat` cùng SHA lúc bắt đầu; snapshot CAT-04 ghi HEAD trước commit, không có thay đổi source phát sinh ngoài commit đó.
+- Không tạo branch/PR, merge, force-push. `.vscode/settings.json` và `foundation-review.patch` untracked có sẵn được giữ nguyên, không commit.
+- Thay đổi controller/ViewModel và ba view ProductVariants của Đạt; một helper ảnh trong Areas/Admin; `.csproj` (Hoàng Bảo điều phối) chỉ đăng ký helper, dùng System.Drawing sẵn có. Thêm tests/CAT-05, cập nhật contract/decisions/HANDOFF. Không sửa code Nhàn/Tân, storefront, auth/layout, schema/EDMX/generated, kho hoặc dependency.
+- Phiên được giao commit/push lên `NgoThanhDat` rồi dừng review. SHA của commit chứa HANDOFF đọc lại từ Git, không tự gán trong file này; kiểm tra staging/status và remote sau push trong kết quả phiên.
 
-## Chức năng
+## Hành vi và bằng chứng
 
-- `/Admin/Products`: danh sách hai trạng thái, thêm/sửa tên/mô tả/loại/thương hiệu/NCC mặc định/bảo hành/trạng thái. Mã sản phẩm bất biến; không xóa cứng, không đổi dây chuyền trạng thái biến thể.
-- Chọn danh mục đang sử dụng; sửa được giữ nguyên liên kết cũ ngừng sử dụng, không chuyển sang danh mục ngừng sử dụng khác. NCC mặc định tùy chọn; form ghi rõ liên kết cũ.
-- `/Admin/ProductVariants?productId=...`: danh sách/thêm/sửa biến thể theo sản phẩm, kiểm quyền sở hữu sản phẩm–biến thể khi GET/POST. Mã và cha bất biến; SKU sửa được, duy nhất toàn bảng gồm biến thể ngừng bán. Không áp unique tên hoặc tổ hợp cấu hình.
-- ViewModel, ADMIN, cả bốn POST có anti-forgery. Validation PK/độ dài/FK, bảo hành 0–120, RAM/bộ nhớ tùy chọn 1–32767, giá không âm và đúng decimal(18,2), tối đa 9999999999999999.99. Không âm thầm làm tròn giá có hơn 2 chữ số thập phân ở giá trị decimal nhận vào.
-- Ảnh tùy chọn qua `HinhAnhUrl`, tối đa 500; chỉ nhận /images/... với ký tự tên an toàn để tương thích storefront đang ghép ~, chặn traversal, dấu nháy/backslash/control/URL ngoài; không upload/truy cập ảnh.
-- Chỉ cập nhật scalar catalog. Không tạo/cập nhật TONKHO, nhật ký kho, quan hệ/chứng từ/giỏ hàng hoặc snapshot giá/tên. Biến thể mới chưa có TONKHO; việc chuẩn bị tồn thuộc luồng khác, chưa nghiệm thu.
+- Upload JPEG/PNG từ Create/Edit, tên GUID, chuẩn hóa PNG, URL `/images/variants/...`; validation định dạng/MIME/nội dung, 2 MiB và giới hạn pixel. Hiển thị ảnh DB, preview, thay/bỏ ảnh; giữ đường dẫn ảnh cũ tương thích storefront. Chi tiết và chính sách giữ file cũ/lỗi bù tại contract, không tạo cơ chế dọn dữ liệu cũ.
+- Build Debug solution bằng VS MSBuild `C:/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/MSBuild.exe`: thành công; chỉ còn cảnh báo binding MSB3247 hiện hữu.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tests/CAT-05/Run.ps1`: **100/100** kiểm tra file thật/GDI+/gọi controller với DB giả; script preview và multipart đạt kiểm tra bằng Node với DOM giả. Gồm JPEG/PNG, tên traversal được thay bằng tên server, file rỗng/giả/hỏng/sai MIME/đuôi, quá byte/pixel, ContentLength sai, đúng 2 MiB, bỏ payload, 12 upload đồng thời trùng tên đầu vào, giữ ảnh dùng chung, thay/bỏ, lỗi ghi filesystem thật, lỗi DB/concurrency giả, commit-rồi-báo-lỗi, kết quả lưu không rõ dù không có tham chiếu DB và lỗi truy vấn/dọn file.
+- Hồi quy bằng `tests/CAT-01/Run.ps1` **31/31**, CAT-02 **80/80**, CAT-03 **64/64**, CAT-04 **211/211**. Bao gồm parse/compile Razor, validation/overposting và metadata ADMIN/POST/anti-forgery. Không coi metadata là đã kiểm filter qua HTTP. Dữ liệu/file test ở thư mục `obj/Cat05Checks`, không dùng ảnh hoặc dữ liệu ứng dụng.
 
-## Kiểm chứng và giới hạn
+## Giới hạn cần review
 
-- VS MSBuild tại `C:/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/MSBuild.exe`, build Debug solution `DoAnLTWeb/QuanLiDienThoaiDD/QuanLiDienThoaiDD.sln`: thành công; cảnh báo MSB3247 binding hiện hữu, không sửa config.
-- `powershell -NoProfile -ExecutionPolicy Bypass -File tests/CAT-04/Run.ps1`: **211 kiểm tra dữ liệu giả đạt**, gồm Create/Edit validation, PK/SKU trùng toàn bảng, FK cũ ngừng sử dụng, dữ liệu không tồn tại/sai cha, biên giá/độ dài/RAM/bảo hành, trạng thái, chống overposting khóa/ngày/cha/stock/chứng từ/giỏ, lỗi lưu/concurrency giả, binding số invariant/vi-VN và parse/compile tám view.
-- Chạy hồi quy CAT-01 **31/31**, CAT-02 **80/80**, CAT-03 **64/64** đạt. Harness chỉ kiểm metadata ADMIN/POST/anti-forgery, không chứng minh filter chạy qua HTTP.
-- Không có database kiểm thử an toàn được chỉ định, project thiếu Web.config gốc và startup gọi seed: không khởi động app, chạy SQL hoặc seed. UI/HTTP auth/CSRF, SQL persistence/collation/unique race, transaction và concurrency chưa nghiệm thu.
-- Chưa có concurrency token: sửa đồng thời có thể ghi đè. Storefront/checkout chưa lọc đầy đủ trạng thái biến thể/danh mục; trạng thái Admin không bảo đảm đã chặn mua phía khách. Không sửa các giới hạn này trong CAT-04.
-- Kiểm diff/staging đúng 17 file thuộc gói, không đổi module cũ; giữ file untracked. Commit/push trên `NgoThanhDat`, dừng review, không chuyển chức năng tiếp theo.
+- Project vẫn thiếu Web.config gốc, startup gọi seed, chưa có database kiểm thử an toàn được chỉ định: không chạy ứng dụng IIS/SQL/seed. **Chưa xác minh** UI trình duyệt/multipart HTTP, auth/CSRF thực tế, SQL persistence/transaction/collation/concurrency hoặc quyền ghi IIS và giới hạn request host.
+- Cơ chế dọn file sau lỗi DB chỉ áp dụng khi xác nhận chưa lưu/rollback và không có tham chiếu; giữ file khi kết quả lưu không rõ hoặc không xác minh được. Không có transaction chung filesystem/SQL. Chưa nghiệm thu race tham chiếu/cleanup; crash tiến trình hoặc lỗi dọn có thể để file dư, cần đối soát riêng. Không tự dọn ảnh cũ vì giỏ hàng/session có thể còn dùng.
+- Giữ các giới hạn CAT-04: chưa có concurrency token, sửa đồng thời có thể ghi đè; storefront/checkout chưa lọc đầy đủ trạng thái catalog; tạo biến thể không tự tạo TONKHO. Không xử lý các mục này trong CAT-05.

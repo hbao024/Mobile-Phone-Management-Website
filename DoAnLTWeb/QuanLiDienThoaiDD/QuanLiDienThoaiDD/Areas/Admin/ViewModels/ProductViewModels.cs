@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Web;
 
 namespace QuanLiDienThoaiDD.Areas.Admin.ViewModels
 {
@@ -78,6 +79,12 @@ namespace QuanLiDienThoaiDD.Areas.Admin.ViewModels
         [StringLength(500, ErrorMessage = "Đường dẫn ảnh tối đa 500 ký tự.")]
         [RegularExpression(@"/images/(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*", ErrorMessage = "Dùng /images/ten-anh.jpg; thư mục/tên ảnh chỉ gồm chữ ASCII, số, _ hoặc -, tên ảnh có thể chứa dấu chấm. Không nhập URL ngoài hay đường dẫn lùi.")]
         public string HinhAnhUrl { get; set; }
+
+        [Display(Name = "Tải ảnh mới")]
+        public HttpPostedFileBase ImageUpload { get; set; }
+
+        [Display(Name = "Bỏ ảnh của biến thể")]
+        public bool RemoveImage { get; set; }
 
         [Display(Name = "Đang kinh doanh")]
         public bool TrangThai { get; set; }

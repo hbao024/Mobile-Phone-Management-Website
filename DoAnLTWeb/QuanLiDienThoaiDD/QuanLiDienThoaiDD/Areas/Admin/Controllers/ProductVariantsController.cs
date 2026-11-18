@@ -1,5 +1,10 @@
+using System;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Validation;
 using System.Data.SqlClient;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Web.Mvc;
 using QuanLiDienThoaiDD.Areas.Admin.ViewModels;
@@ -45,6 +50,7 @@ namespace QuanLiDienThoaiDD.Areas.Admin.Controllers
         {
             if (!LoadProduct(productId)) return HttpNotFound("Không tìm thấy sản phẩm.");
             Normalize(model);
+            ValidateImageChoice(model);
             if (ModelState.IsValid)
             {
                 if (db.BIENSANPHAMs.Any(x => x.MaBienSanPham == model.MaBienSanPham))
@@ -53,10 +59,9 @@ namespace QuanLiDienThoaiDD.Areas.Admin.Controllers
                 if (ModelState.IsValid)
                 {
                     var variant = new BIENSANPHAM { MaBienSanPham = model.MaBienSanPham, MaSanPham = (string)ViewBag.ProductId };
-                    Apply(variant, model);
                     // Stock is owned by the inventory flow, outside CAT-04.
                     db.BIENSANPHAMs.Add(variant);
-                    if (TrySave()) return RedirectToAction("Index", new { productId = (string)ViewBag.ProductId });
+                    if (TrySaveWithImage(variant, model)) return RedirectToAction("Index", new { productId = (string)ViewBag.ProductId });
                 }
             }
             return View(model);
@@ -68,6 +73,7 @@ namespace QuanLiDienThoaiDD.Areas.Admin.Controllers
             var variant = FindVariant(productId, id);
             if (variant == null) return HttpNotFound("Không tìm thấy biến thể thuộc sản phẩm.");
             ViewBag.VariantId = variant.MaBienSanPham;
+            ViewBag.CurrentImageUrl = variant.HinhAnhUrl;
             return View(new ProductVariantEditViewModel
             {
                 SKU = variant.SKU, MauSac = variant.MauSac, RAMGB = variant.RAMGB, BoNhoGB = variant.BoNhoGB,
@@ -82,14 +88,15 @@ namespace QuanLiDienThoaiDD.Areas.Admin.Controllers
             var variant = FindVariant(productId, id);
             if (variant == null) return HttpNotFound("Không tìm thấy biến thể thuộc sản phẩm.");
             ViewBag.VariantId = variant.MaBienSanPham;
+            ViewBag.CurrentImageUrl = variant.HinhAnhUrl;
             Normalize(model);
+            ValidateImageChoice(model);
             if (ModelState.IsValid)
             {
                 ValidateSku(model.SKU, variant.MaBienSanPham);
                 if (ModelState.IsValid)
                 {
-                    Apply(variant, model);
-                    if (TrySave()) return RedirectToAction("Index", new { productId = (string)ViewBag.ProductId });
+                    if (TrySaveWithImage(variant, model)) return RedirectToAction("Index", new { productId = (string)ViewBag.ProductId });
                 }
             }
             return View(model);
@@ -99,6 +106,69 @@ namespace QuanLiDienThoaiDD.Areas.Admin.Controllers
         {
             return string.IsNullOrWhiteSpace(id) ? null
                 : db.BIENSANPHAMs.SingleOrDefault(x => x.MaBienSanPham == id && x.MaSanPham == productId);
+        }
+
+        private void ValidateImageChoice(ProductVariantEditViewModel model)
+        {
+            if (model.RemoveImage && model.ImageUpload != null)
+                ModelState.AddModelError("ImageUpload", "Chọn tải ảnh mới hoặc bỏ ảnh, không chọn cả hai.");
+        }
+
+        private bool TrySaveWithImage(BIENSANPHAM variant, ProductVariantEditViewModel model)
+        {
+            string uploaded = null;
+            string directory = null;
+            var saved = false;
+            var rollbackConfirmed = false;
+            try
+            {
+                if (model.ImageUpload != null)
+                {
+                    try
+                    {
+                        directory = Server.MapPath("~" + VariantImageStorage.UrlFolder);
+                        uploaded = VariantImageStorage.Save(model.ImageUpload, directory);
+                    }
+                    catch (InvalidDataException ex)
+                    {
+                        ModelState.AddModelError("ImageUpload", ex.Message);
+                        return false;
+                    }
+                    catch (IOException)
+                    {
+                        ModelState.AddModelError("ImageUpload", "Không lưu được ảnh. Vui lòng thử lại hoặc liên hệ quản trị.");
+                        return false;
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        ModelState.AddModelError("ImageUpload", "Không có quyền lưu ảnh. Vui lòng liên hệ quản trị.");
+                        return false;
+                    }
+                    catch (ArgumentException)
+                    {
+                        ModelState.AddModelError("ImageUpload", "Tên hoặc dữ liệu ảnh không hợp lệ.");
+                        return false;
+                    }
+                }
+                Apply(variant, model);
+                if (model.RemoveImage) variant.HinhAnhUrl = null;
+                if (uploaded != null) variant.HinhAnhUrl = uploaded;
+                saved = TrySave(out rollbackConfirmed);
+                return saved;
+            }
+            finally
+            {
+                // Keep every old image: other variants, brand URLs and session carts may still reference it.
+                if (!saved && uploaded != null)
+                {
+                    if (rollbackConfirmed)
+                        VariantImageStorage.TryDiscard(uploaded, directory, url =>
+                            db.BIENSANPHAMs.AsNoTracking().Any(x => x.HinhAnhUrl == url)
+                            || db.THUONGHIEUx.AsNoTracking().Any(x => x.LogoUrl == url || x.LogoUrl == "~" + url));
+                    else
+                        Trace.TraceWarning("CAT-05: retained upload {0}; database save result is uncertain.", Path.GetFileName(uploaded));
+                }
+            }
         }
 
         private void ValidateSku(string sku, string excludedId)
@@ -128,17 +198,32 @@ namespace QuanLiDienThoaiDD.Areas.Admin.Controllers
             variant.TrangThai = model.TrangThai;
         }
 
-        private bool TrySave()
+        private bool TrySave(out bool rollbackConfirmed)
         {
+            rollbackConfirmed = false;
             try { db.SaveChanges(); TempData["VariantSuccess"] = "Đã lưu biến thể."; return true; }
             catch (DbUpdateConcurrencyException)
-            { ModelState.AddModelError("", "Biến thể đã thay đổi hoặc không còn tồn tại. Vui lòng tải lại."); }
+            {
+                rollbackConfirmed = true;
+                ModelState.AddModelError("", "Biến thể đã thay đổi hoặc không còn tồn tại. Vui lòng tải lại.");
+            }
+            catch (DbEntityValidationException)
+            {
+                rollbackConfirmed = true;
+                ModelState.AddModelError("", "Dữ liệu biến thể không hợp lệ. Vui lòng kiểm tra hoặc tải lại.");
+            }
             catch (DbUpdateException ex)
             {
                 var sql = ex.GetBaseException() as SqlException;
-                ModelState.AddModelError("", sql != null && (sql.Number == 2601 || sql.Number == 2627)
+                rollbackConfirmed = sql != null && (sql.Number == 2601 || sql.Number == 2627);
+                ModelState.AddModelError("", rollbackConfirmed
                     ? "Mã biến thể hoặc SKU đã tồn tại. Vui lòng kiểm tra lại."
                     : "Không thể lưu biến thể. Sản phẩm có thể đã thay đổi; vui lòng tải lại hoặc thử lại sau.");
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("CAT-05: variant save failed ({0}).", ex.GetType().Name);
+                ModelState.AddModelError("", "Không thể lưu biến thể. Vui lòng tải lại hoặc thử lại sau.");
             }
             return false;
         }
