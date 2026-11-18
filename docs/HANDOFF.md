@@ -12,7 +12,9 @@ Snapshot ngày 2026-11-18, múi giờ Asia/Saigon. Quy trình khôi phục tại
 | Branch CAT-01 lúc bắt đầu | `feature/dat/catalog-categories` / `a4a44ce1de96952ac5615060fa2d5efa0695587f`, remote khớp |
 | CAT-01 | [Draft PR #1](https://github.com/hbao024/Mobile-Phone-Management-Website/pull/1), open, draft, chưa merge; đã đọc lại metadata GitHub |
 | Công việc có sẵn/ngoài phạm vi | `foundation-review.patch` untracked có sẵn; `.vscode/settings.json` untracked xuất hiện trong phiên, không do CAT-02 tạo; giữ nguyên, không stage/commit |
-| Base PR CAT-02 | `integration/foundation`; trạng thái commit/push/PR cập nhật sau khi thực hiện |
+| Base PR CAT-02 | `integration/foundation` |
+| Commit triển khai / HEAD trước cập nhật bàn giao | `4b8731b491b616fc89ede70b9b5acf4ed89f7c13`, đã push và xác minh remote khớp |
+| Draft PR CAT-02 | [#2](https://github.com/hbao024/Mobile-Phone-Management-Website/pull/2), open, draft; base/head refs và SHA khớp lúc tạo |
 
 Lúc bắt đầu, working tree/staging sạch ngoài patch có sẵn. Snapshot CAT-01 mô tả HEAD trước cập nhật tài liệu; đã đọc commit `a4a44ce` chỉ sửa HANDOFF. Tạo branch từ nền đã fetch, không cherry-pick/merge CAT-01. Chỉ tham khảo tổ chức controller/ViewModels/views và harness bằng `git show`; file ứng dụng/test CAT-02 có tên/đường dẫn riêng, không phụ thuộc CAT-01. Không reset hoặc sửa patch/editor settings.
 
@@ -48,7 +50,7 @@ git diff --check
 | Harness dữ liệu giả | 61 kiểm tra thành công, không chạy Application_Start hoặc SQL; dùng subclass context/DbSet giả trong tiến trình test |
 | Binding/validation và controller | Tạo/sửa, thiếu/trắng tên, thiếu/sai/trùng mã, tên trùng thương hiệu ngừng sử dụng, vượt độ dài/đúng biên, URL hợp lệ/không hợp lệ, xóa logo về null, GET/POST bản ghi không tồn tại, đọc form sửa, hai chiều trạng thái, giữ mã và quan hệ khi overpost, danh sách hai trạng thái, thông báo thành công/lỗi lưu/lỗi mất bản ghi lúc lưu |
 | Metadata và Razor | ADMIN, hai POST có anti-forgery, không Delete; parse/compile độc lập cả bốn Razor view trong 61 kiểm tra; chưa render HTTP/UI |
-| Diff/staging | Kiểm tra phạm vi trước commit; loại patch và `.vscode/` ngoài phạm vi khỏi staging |
+| Diff/staging | Đúng 11 file CAT-02; diff/check và cached/check thành công; patch và `.vscode/` không thuộc commit. Cập nhật bàn giao sau PR khôi phục BOM gốc của .csproj để diff cuối chỉ còn sáu đăng ký file |
 | UI, HTTP authentication/CSRF | CHƯA CHẠY; reflection metadata không chứng minh middleware/filter chạy đúng qua HTTP |
 | SQL/persistence/collation/unique race/concurrency | CHƯA CHẠY; LINQ to Objects và SaveChanges giả không mô phỏng SQL collation, constraint, transaction hay lưu bền |
 
@@ -58,4 +60,4 @@ git diff --check
 - Không có concurrency token trong schema: hai người sửa cùng thương hiệu có thể ghi đè nhau; catch concurrency chỉ xử lý trường hợp EF phát hiện như bản ghi biến mất khi lưu. Không khẳng định đã xử lý lost update.
 - Storefront hiện lọc trạng thái sản phẩm, chưa lọc `THUONGHIEU.TrangThai`. Ngừng sử dụng trong Admin chưa tự ẩn sản phẩm tại cửa hàng; phần storefront thuộc phạm vi khác.
 - Khi tích hợp sau review, `.csproj`, HANDOFF và decisions là file dùng chung với CAT-01, cần giữ cả hai gói khi giải quyết diff; không lấy nguyên file từ một branch đè branch còn lại.
-- Hoàn tất commit/push và Draft PR theo D-012 rồi dừng để ChatGPT review. Không merge/Ready CAT-01 hoặc CAT-02, không bắt đầu gói tiếp theo.
+- Đã commit/push và tạo Draft PR #2 theo D-012. GitHub connector tạo PR bị 403; đã hoàn tất qua GitHub API bằng credential Git hiện có, không lưu credential vào file hoặc đầu ra. Cập nhật bàn giao và khôi phục BOM .csproj được commit/push riêng; SHA cuối đọc lại từ Git/PR. Dừng để ChatGPT review, không merge/Ready CAT-01 hoặc CAT-02, không bắt đầu gói tiếp theo.
