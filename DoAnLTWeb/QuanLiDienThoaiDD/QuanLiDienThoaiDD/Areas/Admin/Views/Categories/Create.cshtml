@@ -1,0 +1,20 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.CategoryViewModel
+@{
+    ViewBag.Title = "Thêm loại sản phẩm";
+}
+
+<h1>Thêm loại sản phẩm</h1>
+@using (Html.BeginForm("Create", "Categories", new { area = "Admin" }, FormMethod.Post, null))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger", role = "alert" })
+    <div class="mb-3">
+        @Html.LabelFor(m => m.MaLoai, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.MaLoai, new { @class = "form-control", maxlength = "10", required = "required", aria_describedby = "category-code-help" })
+        <small id="category-code-help">Tối đa 10 ký tự: chữ không dấu, số, _ hoặc -. Mã không thể đổi sau khi tạo.</small>
+        @Html.ValidationMessageFor(m => m.MaLoai, "", new { @class = "text-danger" })
+    </div>
+    @Html.Partial("_Fields", Model)
+    <button type="submit" class="btn btn-primary">Thêm loại sản phẩm</button>
+    @Html.ActionLink("Về danh sách", "Index", null, new { @class = "btn btn-secondary" })
+}

@@ -1,50 +1,31 @@
-# Bàn giao FOUNDATION-02B.1
+# Bàn giao — NgoThanhDat
 
-Snapshot ngày 2026-11-18, múi giờ Asia/Saigon. Quy trình khôi phục context nằm tại [AGENTS.md](../AGENTS.md); trạng thái duyệt nằm tại [decisions.md](decisions.md).
+Snapshot 2026-11-18 (Asia/Saigon). Quy trình: [AGENTS.md](../AGENTS.md); quyền hợp nhất: D-013 trong [decisions.md](decisions.md). Chỉ thống nhất CAT-01/CAT-02, chưa triển khai chức năng tiếp theo.
 
-## Snapshot Git
+## Git và nguồn
 
-| Đối tượng | Giá trị tại thời điểm kiểm tra |
+| Nội dung | Trạng thái lúc kiểm tra trước commit tổng hợp |
 |---|---|
-| Branch làm việc | `integration/foundation` |
-| SHA nền Nhàn / HEAD trước commit tài liệu | `a675fdcf712fcdb52f1d3a562c2a17857ee0850c` |
-| Ref nguồn Nhàn | `origin/NguyenThanhNhan` |
-| SHA nguồn Admin Tân | `4990488c1e85dacdf762eab817f3cceeb183171c` |
-| Ref nguồn Tân | `origin/DaoDuyTan` |
-| HEAD và main trước tạo branch | `313c7d20935f08c284261d20aaa4b675ca05773a` |
-| Working tree / staging trước tạo branch | Sạch / sạch; không có file untracked |
+| Branch làm việc chính | `NgoThanhDat`; hợp nhất trên branch tạm `feature/dat/catalog-management` từ `integration/foundation`, sau đó đổi tên an toàn |
+| Base / HEAD trước commit | `ff4736981e242df1f7e67df1e143b1383d3d0d88`, remote đã fetch/xác minh |
+| CAT-01 / PR #1 | `a4a44ce1de96952ac5615060fa2d5efa0695587f` |
+| CAT-02 / PR #2 | `618927ed40b0c0df3275e8dc3c4d7fab298eb959`, gồm Review Fix 01 |
+| PR / branch cũ | Theo điều chỉnh mới nhất: không tạo PR mới; xác minh remote `NgoThanhDat` đủ nội dung trước khi đóng PR #1/#2 và xóa ba branch cũ |
+| Ngoài phạm vi | `foundation-review.patch`, `.vscode/settings.json` untracked có sẵn, giữ nguyên và không commit |
 
-HEAD sau commit phải đọc bằng `git rev-parse HEAD`; file này không chứa SHA của chính commit tạo ra nó. Các SHA remote là snapshot, cần đọc lại nếu nhiệm vụ tiếp theo phụ thuộc remote.
+SHA commit tổng hợp đọc lại từ Git; không tự gán SHA cho commit đang chứa file này. Giữ nguyên `integration/foundation`, `main`, `NguyenThanhNhan`, `DaoDuyTan`. Không merge/force-push. Chỉ dùng `NgoThanhDat` cho công việc Đạt tiếp theo.
 
-## Nhiệm vụ và phạm vi
+## Nội dung và bảo toàn
 
-Tạo bộ tài liệu nền để chuyển chat và chuẩn bị tích hợp. Diff được phép chỉ gồm năm file mới:
+- `/Admin/Categories` và `/Admin/Brands`: danh sách hai trạng thái, thêm/sửa, ngừng sử dụng; ADMIN, ViewModel, POST/anti-forgery và validation như code đã review.
+- Nhập nguyên nội dung 16 file code/views/tests từ đúng hai HEAD nguồn, không sửa nghiệp vụ; đối chiếu Git blob từng file. Chỉ hợp nhất `.csproj` (đủ 4 C# và 8 Razor view), D-011/D-012, bổ sung D-013 và thay HANDOFF.
+- Diff so với nền chỉ gồm 19 file thuộc hai gói và tài liệu; không xóa file, không đổi SQL/schema/EDMX/context, authentication, storefront, layout hoặc dependency. Không chạy database/seed.
 
-```text
-AGENTS.md
-docs/architecture.md
-docs/contracts/catalog-inventory.md
-docs/decisions.md
-docs/HANDOFF.md
-```
+## Kiểm chứng và giới hạn
 
-Source vẫn ở cấu trúc ứng viên; module Admin Tân chưa được nhập. Không sửa code, config, EDMX hoặc SQL, không chuyển thư mục. Không merge/push, không bắt đầu FOUNDATION tiếp theo.
-
-## Tiến độ và kiểm chứng
-
-- Đã kiểm tra Git sạch và xác minh SHA hai remote bằng `git ls-remote --heads origin`.
-- Đã kiểm tra tên branch chưa tồn tại ở local/remote rồi tạo từ SHA nền cố định.
-- Đã đọc instruction và kiểm tra source context/dependency; kết luận giới hạn ở kiểm tra tĩnh.
-- Đã tạo đúng năm tài liệu; kiểm tra bằng Python đối chiếu danh sách thay đổi với allowlist và HEAD nền: PASS.
-- Đã kiểm tra các liên kết file và anchor nội bộ trong cả năm tài liệu: PASS.
-- Đã quét năm tài liệu bằng các mẫu dò phép gán mật khẩu, connection string và giá trị mật khẩu demo đã biết: không có kết quả khớp. Đây không phải audit bí mật toàn repository.
-- Đã stage đúng năm file mới, kiểm `git diff --cached --check` thành công và review diff; không có file hiện hữu bị sửa. Snapshot này được ghi trước commit; cần kiểm lại status sau commit.
-- Chưa chạy build, UI, SQL, seed hoặc thử nghiệm concurrency; không có bằng chứng runtime.
-
-Nguồn Admin có thể đọc không đổi branch bằng `git show <ref-nguồn-Tân>:QuanLiDienThoaiDD/Areas/Admin/Controllers/OrdersController.cs` và đường dẫn tương tự tới `StockReceiptsController.cs`. Không sao chép dữ liệu nhạy cảm khi đọc source.
-
-## Điểm tiếp tục
-
-Commit dự kiến: `docs: establish foundation architecture and handoff`. Xác minh commit thực tế bằng `git log -1 --format=fuller`, phạm vi bằng `git diff --name-status <SHA-nền> HEAD`, và trạng thái sau commit bằng `git status --short --branch`. Kết quả sau commit nằm trong Git và báo cáo bàn giao, không tự gán trước SHA/kết quả vào snapshot.
-
-Sau kiểm chứng và commit gói tài liệu, dừng để review. Bước kế tiếp cần chỉ đạo mới; các mục còn mở được quản lý tại sổ quyết định. Khi đổi chat, kiểm tra HEAD/status thực tế thay vì mặc định snapshot trước commit là trạng thái hiện tại.
+- Build Debug bằng VS MSBuild/.NET Framework 4.7.2 thành công; còn cảnh báo MSB3247 dependency binding hiện hữu.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tests/CAT-01/Run.ps1`: **31/31 đạt**.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File tests/CAT-02/Run.ps1`: **80/80 đạt**, gồm giới hạn logo trong /images/ hoặc ~/images/.
+- Hai harness dùng dữ liệu giả; đã parse/compile cả 8 Razor view. Chưa kiểm chứng UI/HTTP auth/CSRF, SQL persistence/collation/unique race hoặc concurrency.
+- Chưa có DB kiểm thử được chỉ định; project thiếu Web.config gốc và startup gọi seed nên không khởi động ứng dụng. Schema chưa có concurrency token; sửa đồng thời có thể ghi đè. Ngừng sử dụng chưa tự ẩn sản phẩm ở storefront.
+- Dừng sau push/xác minh `NgoThanhDat`, đóng hai PR cũ với liên kết branch mới và xóa các branch cũ đã được bảo toàn. Không tạo PR mới, không merge, không tự làm CAT-03.

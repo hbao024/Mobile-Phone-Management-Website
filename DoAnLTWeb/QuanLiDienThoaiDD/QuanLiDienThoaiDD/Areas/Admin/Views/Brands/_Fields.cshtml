@@ -1,0 +1,23 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.BrandEditViewModel
+
+<div class="mb-3">
+    @Html.LabelFor(m => m.TenThuongHieu, new { @class = "form-label" })
+    @Html.TextBoxFor(m => m.TenThuongHieu, new { @class = "form-control", maxlength = "100", required = "required" })
+    @Html.ValidationMessageFor(m => m.TenThuongHieu, "", new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(m => m.MoTa, new { @class = "form-label" })
+    @Html.TextAreaFor(m => m.MoTa, new { @class = "form-control", maxlength = "500", rows = "4" })
+    @Html.ValidationMessageFor(m => m.MoTa, "", new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(m => m.LogoUrl, new { @class = "form-label" })
+    @Html.TextBoxFor(m => m.LogoUrl, new { @class = "form-control", maxlength = "500", aria_describedby = "brand-logo-help" })
+    <p id="brand-logo-help">Để trống hoặc nhập URL HTTP/HTTPS, /images/... hay ~/images/... Không tải ảnh lên ở đây.</p>
+    @Html.ValidationMessageFor(m => m.LogoUrl, "", new { @class = "text-danger" })
+</div>
+<div class="form-check mb-3">
+    @Html.CheckBoxFor(m => m.TrangThai, new { @class = "form-check-input", aria_describedby = "brand-status-help" })
+    @Html.LabelFor(m => m.TrangThai, new { @class = "form-check-label" })
+    <p id="brand-status-help">Bỏ chọn để ngừng sử dụng thương hiệu trong quản trị. Không xóa thương hiệu hoặc sản phẩm liên quan.</p>
+</div>

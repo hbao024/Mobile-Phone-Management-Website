@@ -1,0 +1,44 @@
+@model IEnumerable<QuanLiDienThoaiDD.Areas.Admin.ViewModels.BrandViewModel>
+@{
+    ViewBag.Title = "Thương hiệu";
+}
+
+<h1>Thương hiệu</h1>
+@if (TempData["BrandSuccess"] != null)
+{
+    <div class="alert alert-success" role="status">@TempData["BrandSuccess"]</div>
+}
+<p>@Html.ActionLink("Thêm thương hiệu", "Create", null, new { @class = "btn btn-primary" })</p>
+<p>Chọn Chỉnh sửa để thay đổi thông tin hoặc ngừng sử dụng. Dữ liệu liên quan được giữ nguyên.</p>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <caption>Danh sách thương hiệu, bao gồm các thương hiệu đã ngừng sử dụng</caption>
+        <thead>
+            <tr>
+                <th scope="col">Mã thương hiệu</th>
+                <th scope="col">Tên thương hiệu</th>
+                <th scope="col">Mô tả</th>
+                <th scope="col">Đường dẫn logo</th>
+                <th scope="col">Trạng thái</th>
+                <th scope="col">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.MaThuongHieu</td>
+                    <td>@item.TenThuongHieu</td>
+                    <td style="white-space: pre-wrap; overflow-wrap: anywhere;">@item.MoTa</td>
+                    <td style="overflow-wrap: anywhere;">@item.LogoUrl</td>
+                    <td>@(item.TrangThai ? "Đang sử dụng" : "Ngừng sử dụng")</td>
+                    <td>@Html.ActionLink("Chỉnh sửa", "Edit", new { id = item.MaThuongHieu }, new { aria_label = "Chỉnh sửa " + item.TenThuongHieu })</td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr><td colspan="6">Chưa có thương hiệu.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

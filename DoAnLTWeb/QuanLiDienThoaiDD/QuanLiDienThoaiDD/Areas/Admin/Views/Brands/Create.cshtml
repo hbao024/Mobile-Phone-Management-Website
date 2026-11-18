@@ -1,0 +1,20 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.BrandViewModel
+@{
+    ViewBag.Title = "Thêm thương hiệu";
+}
+
+<h1>Thêm thương hiệu</h1>
+@using (Html.BeginForm("Create", "Brands", new { area = "Admin" }, FormMethod.Post, null))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger", role = "alert" })
+    <div class="mb-3">
+        @Html.LabelFor(m => m.MaThuongHieu, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.MaThuongHieu, new { @class = "form-control", maxlength = "10", required = "required", aria_describedby = "brand-code-help" })
+        <small id="brand-code-help">Tối đa 10 ký tự: chữ không dấu, số, _ hoặc -. Mã không thể đổi sau khi tạo.</small>
+        @Html.ValidationMessageFor(m => m.MaThuongHieu, "", new { @class = "text-danger" })
+    </div>
+    @Html.Partial("_Fields", Model)
+    <button type="submit" class="btn btn-primary">Thêm thương hiệu</button>
+    @Html.ActionLink("Về danh sách", "Index", null, new { @class = "btn btn-secondary" })
+}
