@@ -2,6 +2,16 @@
 
 Snapshot ngày 2026-11-18, múi giờ Asia/Saigon. Quy trình khôi phục tại [AGENTS.md](../AGENTS.md); phạm vi được duyệt tại D-012 trong [decisions.md](decisions.md).
 
+## CAT-02 — Review Fix 01
+
+- Người dùng yêu cầu sửa sau review tĩnh Draft PR #2 tại `b571c666a00781f2c59c960d71ea86b7f765a311`. HEAD local và remote `feature/dat/catalog-brands` khớp SHA này lúc bắt đầu; remote nền vẫn `ff4736981e242df1f7e67df1e143b1383d3d0d88`. Đã đọc commit bàn giao `b571c66` và xác minh PR #2 open/draft, chưa merge.
+- Sửa `LogoPathAttribute` để chỉ nhận đường dẫn nội bộ có tiền tố chính xác `/images/` hoặc `~/images/` và phần đường dẫn phía sau không rỗng. Giữ kiểm tra HTTP/HTTPS hiện có và các chặn traversal, backslash, scheme nguy hiểm, ký tự điều khiển. Không đổi hợp đồng hay phạm vi D-012.
+- Test hồi quy trên assembly trước sửa thất bại đúng tại `/admin/test`, tái hiện lỗi review. Bổ sung từ chối `/other/logo.png`, dạng `~/`, tiền tố gần giống, thư mục rỗng, tiền tố mã hóa/khác hoa thường và traversal bên trong images; kiểm cả Create/Edit. Sửa fixture biên 500/501 ký tự để nằm trong `/images/`; giữ ca URL HTTP/HTTPS và thêm thư mục ảnh con hợp lệ.
+- Chạy lại lệnh Build Debug và toàn bộ `tests/CAT-02/Run.ps1` bên dưới: build thành công, **80 kiểm tra dữ liệu giả đạt**, gồm parse/compile cả bốn Razor view. Còn cảnh báo MSB3247 hiện hữu; UI/HTTP auth/CSRF, SQL và concurrency chưa chạy. Không khởi động ứng dụng, SQL hoặc seed.
+- Diff gói sửa chỉ gồm `BrandViewModels.cs`, `tests/CAT-02/BrandChecks.cs` và HANDOFF này. Patch và `.vscode/` vẫn ngoài phạm vi; staging ban đầu sạch. Commit/push trên chính branch hiện có, không tạo PR mới; HEAD sau commit đọc lại từ Git/PR #2. Dừng để review lại, không merge hoặc chuyển CAT-03.
+
+Các snapshot và số kiểm tra 61 bên dưới là bằng chứng triển khai ban đầu; kết quả gói sửa hiện tại là 80 ở trên.
+
 ## Snapshot Git
 
 | Đối tượng | Giá trị lúc kiểm tra trước commit CAT-02 |

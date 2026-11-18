@@ -99,13 +99,17 @@ class BrandChecks
         InvalidCreate("code longer than 10", new string('A', 11), "New", "", "MaThuongHieu");
         InvalidCreate("name longer than 100", "NEW", new string('A', 101), "", "TenThuongHieu");
         InvalidCreate("description longer than 500", "NEW", "New", new string('A', 501), "MoTa");
-        InvalidCreate("logo longer than 500", "NEW", "New", "", "LogoUrl", "/" + new string('a', 500));
+        InvalidCreate("logo longer than 500", "NEW", "New", "", "LogoUrl", "/images/" + new string('a', 493));
         foreach (var logo in new[] { "javascript:alert(1)", "data:image/png;base64,AAAA", "file:///c:/logo.png", "ftp://example.com/logo.png",
             "//example.com/logo.png", "/\\example.com/logo.png", "/../logo.png", "~/%2e%2e/logo.png", "/%2fexample.com/logo.png",
-            "https://user:password@example.com/logo.png", "https://", "images/logo.png", "/images/my logo.png", "/images/\nlogo.png", "/images/%00logo.png" })
+            "https://user:password@example.com/logo.png", "https://", "images/logo.png", "/images/my logo.png", "/images/\nlogo.png", "/images/%00logo.png",
+            "/admin/test", "/other/logo.png", "~/admin/test", "~/other/logo.png", "/images-other/logo.png", "~/images-other/logo.png",
+            "/images", "/images/", "~/images/", "/Images/logo.png", "/%69mages/logo.png",
+            "/images/../admin/test", "~/images/%2e%2e/admin/test", "/images/%5c../logo.png", "/images/./logo.png" })
             InvalidCreate("invalid logo: " + logo.Replace('\n', ' '), "NEW", "New", "", "LogoUrl", logo);
 
-        foreach (var logo in new[] { "", "   ", "/images/logo.png", "~/images/logo.png", "https://example.com/logo.png?v=1", "http://example.com/logo.png", "/" + new string('a', 499) })
+        foreach (var logo in new[] { "", "   ", "/images/logo.png", "~/images/logo.png", "/images/brands/logo.png", "~/images/brands/logo.png",
+            "https://example.com/logo.png?v=1", "http://example.com/logo.png", "/images/" + new string('a', 492) })
         {
             var logoDb = new FakeContext();
             using (var controller = Controller(logoDb))
@@ -140,7 +144,8 @@ class BrandChecks
             Check(controller.Edit("OLD", edit) is ViewResult && controller.ModelState["TenThuongHieu"].Errors.Count > 0 && db.Saves == 1, "edit missing name does not save");
 
             foreach (var pair in new[] { new[] { "TenThuongHieu", new string('N', 101) }, new[] { "MoTa", new string('D', 501) },
-                new[] { "LogoUrl", "/" + new string('a', 500) }, new[] { "LogoUrl", "javascript:alert(1)" } })
+                new[] { "LogoUrl", "/images/" + new string('a', 493) }, new[] { "LogoUrl", "javascript:alert(1)" },
+                new[] { "LogoUrl", "/admin/test" }, new[] { "LogoUrl", "~/other/logo.png" } })
             {
                 edit = pair[0] == "TenThuongHieu"
                     ? Bind<BrandEditViewModel>(controller, pair[0], pair[1])

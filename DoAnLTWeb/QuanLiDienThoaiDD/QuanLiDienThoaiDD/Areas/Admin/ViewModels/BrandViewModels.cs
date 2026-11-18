@@ -53,10 +53,10 @@ namespace QuanLiDienThoaiDD.Areas.Admin.ViewModels
                     && !string.IsNullOrEmpty(uri.Host) && string.IsNullOrEmpty(uri.UserInfo);
 
             var local = path.StartsWith("~/", StringComparison.Ordinal) ? path.Substring(1) : path;
-            if (!Uri.IsWellFormedUriString(local, UriKind.Relative)) return false;
+            if (!local.StartsWith("/images/", StringComparison.Ordinal)
+                || !Uri.IsWellFormedUriString(local, UriKind.Relative)) return false;
             local = Uri.UnescapeDataString(local);
-            return local.StartsWith("/", StringComparison.Ordinal) && !local.StartsWith("//", StringComparison.Ordinal)
-                && local.Length > 1 && !local.Contains("\\") && !local.Contains("?") && !local.Contains("#")
+            return local.Length > "/images/".Length && !local.Contains("\\") && !local.Contains("?") && !local.Contains("#")
                 && !local.Any(char.IsControl) && !local.Split('/').Any(x => x == ".." || x == ".");
         }
     }
