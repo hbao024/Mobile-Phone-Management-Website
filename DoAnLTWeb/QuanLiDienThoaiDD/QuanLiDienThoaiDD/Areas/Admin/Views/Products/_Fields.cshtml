@@ -1,0 +1,37 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.ProductEditViewModel
+<div class="mb-3">
+    @Html.LabelFor(m => m.TenSanPham, new { @class = "form-label" })
+    @Html.TextBoxFor(m => m.TenSanPham, new { @class = "form-control", maxlength = "200", required = "required" })
+    @Html.ValidationMessageFor(m => m.TenSanPham, "", new { @class = "text-danger" })
+</div>
+<p>Chọn danh mục đang sử dụng. Khi sửa, có thể giữ nguyên liên kết cũ đã ngừng sử dụng.</p>
+<div class="mb-3">
+    @Html.LabelFor(m => m.MaLoai, new { @class = "form-label" })
+    @Html.DropDownListFor(m => m.MaLoai, (IEnumerable<SelectListItem>)ViewBag.CategoryOptions, "Chọn loại", new { @class = "form-select", required = "required" })
+    @Html.ValidationMessageFor(m => m.MaLoai, "", new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(m => m.MaThuongHieu, new { @class = "form-label" })
+    @Html.DropDownListFor(m => m.MaThuongHieu, (IEnumerable<SelectListItem>)ViewBag.BrandOptions, "Chọn thương hiệu", new { @class = "form-select", required = "required" })
+    @Html.ValidationMessageFor(m => m.MaThuongHieu, "", new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(m => m.MaNCCMacDinh, new { @class = "form-label" })
+    @Html.DropDownListFor(m => m.MaNCCMacDinh, (IEnumerable<SelectListItem>)ViewBag.SupplierOptions, "Không chọn NCC mặc định", new { @class = "form-select" })
+    @Html.ValidationMessageFor(m => m.MaNCCMacDinh, "", new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(m => m.MoTa, new { @class = "form-label" })
+    @Html.TextAreaFor(m => m.MoTa, new { @class = "form-control", rows = "4" })
+    @Html.ValidationMessageFor(m => m.MoTa, "", new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(m => m.BaoHanhThang, new { @class = "form-label" })
+    @Html.TextBoxFor(m => m.BaoHanhThang, new { @class = "form-control", type = "number", min = "0", max = "120", step = "1", required = "required" })
+    @Html.ValidationMessageFor(m => m.BaoHanhThang, "", new { @class = "text-danger" })
+</div>
+<div class="form-check mb-3">
+    @Html.CheckBoxFor(m => m.TrangThai, new { @class = "form-check-input" })
+    @Html.LabelFor(m => m.TrangThai, new { @class = "form-check-label" })
+    <p>Bỏ chọn để ngừng kinh doanh sản phẩm. Giữ nguyên biến thể và dữ liệu liên quan.</p>
+</div>

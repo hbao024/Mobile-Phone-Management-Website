@@ -152,6 +152,9 @@
     <Compile Include="Areas\Admin\ViewModels\CategoryViewModels.cs" />
     <Compile Include="Areas\Admin\Controllers\SuppliersController.cs" />
     <Compile Include="Areas\Admin\ViewModels\SupplierViewModels.cs" />
+    <Compile Include="Areas\Admin\Controllers\ProductsController.cs" />
+    <Compile Include="Areas\Admin\Controllers\ProductVariantsController.cs" />
+    <Compile Include="Areas\Admin\ViewModels\ProductViewModels.cs" />
     <Compile Include="Areas\Admin\ViewModels\DashboardViewModel.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -227,6 +230,14 @@
     <Content Include="Areas\Admin\Views\Suppliers\Create.cshtml" />
     <Content Include="Areas\Admin\Views\Suppliers\Edit.cshtml" />
     <Content Include="Areas\Admin\Views\Suppliers\_Fields.cshtml" />
+    <Content Include="Areas\Admin\Views\Products\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Products\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\Products\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\Products\_Fields.cshtml" />
+    <Content Include="Areas\Admin\Views\ProductVariants\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\ProductVariants\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\ProductVariants\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\ProductVariants\_Fields.cshtml" />
     <Content Include="Views\LoaiSanPham\LoaiSanPhamPartial.cshtml" />
     <Content Include="Views\Shared\UserLayout.cshtml" />
     <Content Include="Views\SanPham\Index.cshtml" />

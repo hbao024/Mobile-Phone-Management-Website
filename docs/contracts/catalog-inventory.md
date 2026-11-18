@@ -18,6 +18,17 @@ Nguồn: [SQL hiện có](../../DoAnLTWeb/QL_HANGHOA_PHUKIEN_WEB.sql), [EDMX](..
 
 Checkout hiện dùng giá đã lưu trong session và sinh mã theo số bản ghi. EDMX chưa có concurrency token. So sánh nguồn Admin ở FOUNDATION-02A cho thấy xử lý kho có transaction nhưng vẫn đọc rồi gán số tồn; giá nhập được cập nhật từ phiếu nhập. Nguồn Admin chưa nằm trong cây ứng viên; ref bằng chứng được ghi ở HANDOFF để đọc bằng `git show`, không cần checkout.
 
+## Biên quản lý catalog CAT-04
+
+Phạm vi và căn cứ tại D-015 trong [sổ quyết định](../decisions.md). Phần này mô tả quản trị catalog, không thay các đề xuất tồn kho bên dưới.
+
+- Mã sản phẩm/biến thể và sản phẩm cha của biến thể giữ bất biến. SKU sửa được nhưng phải duy nhất toàn bảng, kể cả biến thể ngừng bán; không áp unique tên sản phẩm hoặc tổ hợp màu/RAM/bộ nhớ.
+- Khi tạo/chọn mới, chỉ nhận loại, thương hiệu, NCC đang hoạt động. Khi sửa sản phẩm, cho giữ nguyên liên kết cũ đã ngừng sử dụng hoặc chuyển sang bản ghi đang hoạt động; NCC mặc định có thể để trống. Không xóa/sửa bản ghi danh mục hoặc lịch sử chứng từ.
+- Sản phẩm và biến thể có trạng thái riêng, không cập nhật dây chuyền; Admin vẫn quản lý được biến thể dưới sản phẩm ngừng kinh doanh. Storefront/checkout chưa lọc đầy đủ trạng thái biến thể; CAT-04 không sửa phía khách.
+- Giá nhập/bán nhận giá trị không âm trong decimal(18,2), tối đa 9999999999999999.99 và 2 chữ số thập phân; bảo hành 0–120 tháng, RAM/bộ nhớ tùy chọn nhưng phải từ 1–32767 nếu có. Không tính lại snapshot giá/tên trên đơn hoặc phiếu nhập, không thay giá đã nằm trong session giỏ hàng.
+- Chỉ dùng `BIENSANPHAM.HinhAnhUrl` (tùy chọn, 500 ký tự), chưa upload. Storefront hiện ghép `~` với giá trị lưu, nên form nhận `/images/...`; thư mục/tên dùng chữ ASCII/số/_/-, tên ảnh được có dấu chấm. Chặn traversal, URL ngoài, ký tự điều khiển, backslash, dấu nháy và các ký tự không thuộc định dạng này; không truy cập ảnh hoặc xác minh file có tồn tại. Không di chuyển/sửa các ảnh đã có trong repository.
+- Tạo biến thể không tạo TONKHO hoặc nhật ký kho; cập nhật biến thể không nhận/ghi tồn, đơn hàng, giỏ hàng hoặc chi tiết nhập hàng. Luồng tồn/nhập của Tân cần được kiểm chứng riêng; không coi biến thể mới đã có tồn khả dụng.
+
 ## Vấn đề cần thống nhất
 
 - Thời điểm chốt giá, đọc lại giá và yêu cầu xác nhận khi giá thay đổi.

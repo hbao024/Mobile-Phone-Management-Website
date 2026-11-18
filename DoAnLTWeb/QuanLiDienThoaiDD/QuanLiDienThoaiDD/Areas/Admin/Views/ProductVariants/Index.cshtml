@@ -1,0 +1,26 @@
+@model IEnumerable<QuanLiDienThoaiDD.Areas.Admin.ViewModels.ProductVariantViewModel>
+@{ ViewBag.Title = "Biến thể sản phẩm"; }
+<h1>Biến thể: @ViewBag.ProductName</h1>
+<p>Mã sản phẩm: @ViewBag.ProductId — @((bool)ViewBag.ProductActive ? "Đang kinh doanh" : "Ngừng kinh doanh")</p>
+@if (TempData["VariantSuccess"] != null)
+{ <div class="alert alert-success" role="status">@TempData["VariantSuccess"]</div> }
+<p>@Html.ActionLink("Thêm biến thể", "Create", new { productId = (string)ViewBag.ProductId }, new { @class = "btn btn-primary" })
+   @Html.ActionLink("Về sản phẩm", "Edit", "Products", new { area = "Admin", id = (string)ViewBag.ProductId }, null)</p>
+<div class="table-responsive">
+<table class="table table-striped">
+    <caption>Biến thể đang và ngừng kinh doanh của sản phẩm</caption>
+    <thead><tr><th scope="col">Mã</th><th scope="col">SKU</th><th scope="col">Màu</th><th scope="col">RAM (GB)</th><th scope="col">Bộ nhớ (GB)</th><th scope="col">Giá nhập</th><th scope="col">Giá bán</th><th scope="col">Ảnh</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.MaBienSanPham</td><td>@item.SKU</td><td>@item.MauSac</td><td>@item.RAMGB</td><td>@item.BoNhoGB</td>
+            <td>@item.GiaNhap</td><td>@item.GiaBan</td><td style="overflow-wrap: anywhere;">@item.HinhAnhUrl</td>
+            <td>@(item.TrangThai ? "Đang kinh doanh" : "Ngừng kinh doanh")</td>
+            <td>@Html.ActionLink("Chỉnh sửa", "Edit", new { productId = (string)ViewBag.ProductId, id = item.MaBienSanPham })</td>
+        </tr>
+    }
+    @if (!Model.Any()) { <tr><td colspan="10">Chưa có biến thể.</td></tr> }
+    </tbody>
+</table>
+</div>

@@ -1,0 +1,13 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.ProductEditViewModel
+@{ ViewBag.Title = "Chỉnh sửa sản phẩm"; }
+<h1>Chỉnh sửa sản phẩm</h1>
+<p>Mã sản phẩm: <strong>@ViewBag.ProductId</strong> (không thể thay đổi).</p>
+@using (Html.BeginForm("Edit", "Products", new { area = "Admin", id = (string)ViewBag.ProductId }, FormMethod.Post, null))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger", role = "alert" })
+    @Html.Partial("_Fields", Model)
+    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+    @Html.ActionLink("Về danh sách", "Index", null, new { @class = "btn btn-secondary" })
+}
+<p>@Html.ActionLink("Quản lý biến thể", "Index", "ProductVariants", new { area = "Admin", productId = (string)ViewBag.ProductId }, null)</p>

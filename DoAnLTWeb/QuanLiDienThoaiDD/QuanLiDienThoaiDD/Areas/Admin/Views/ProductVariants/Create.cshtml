@@ -1,0 +1,18 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.ProductVariantViewModel
+@{ ViewBag.Title = "Thêm biến thể"; }
+<h1>Thêm biến thể: @ViewBag.ProductName</h1>
+<p>Mã sản phẩm: @ViewBag.ProductId</p>
+@using (Html.BeginForm("Create", "ProductVariants", new { area = "Admin", productId = (string)ViewBag.ProductId }, FormMethod.Post, null))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true, "", new { @class = "text-danger", role = "alert" })
+    <div class="mb-3">
+        @Html.LabelFor(m => m.MaBienSanPham, new { @class = "form-label" })
+        @Html.TextBoxFor(m => m.MaBienSanPham, new { @class = "form-control", maxlength = "30", required = "required" })
+        <small>Mã tối đa 30 ký tự: chữ ASCII, số, _ hoặc -. Mã và sản phẩm cha không đổi sau khi tạo.</small>
+        @Html.ValidationMessageFor(m => m.MaBienSanPham, "", new { @class = "text-danger" })
+    </div>
+    @Html.Partial("_Fields", Model)
+    <button type="submit" class="btn btn-primary">Thêm biến thể</button>
+    @Html.ActionLink("Về danh sách", "Index", new { productId = (string)ViewBag.ProductId }, new { @class = "btn btn-secondary" })
+}

@@ -1,0 +1,43 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.ProductVariantEditViewModel
+<div class="mb-3">
+    @Html.LabelFor(m => m.SKU, new { @class = "form-label" })
+    @Html.TextBoxFor(m => m.SKU, new { @class = "form-control", maxlength = "50", required = "required" })
+    @Html.ValidationMessageFor(m => m.SKU, "", new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(m => m.MauSac, new { @class = "form-label" })
+    @Html.TextBoxFor(m => m.MauSac, new { @class = "form-control", maxlength = "50" })
+    @Html.ValidationMessageFor(m => m.MauSac, "", new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(m => m.RAMGB, new { @class = "form-label" })
+    @Html.TextBoxFor(m => m.RAMGB, new { @class = "form-control", type = "number", min = "1", max = "32767", step = "1" })
+    @Html.ValidationMessageFor(m => m.RAMGB, "", new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(m => m.BoNhoGB, new { @class = "form-label" })
+    @Html.TextBoxFor(m => m.BoNhoGB, new { @class = "form-control", type = "number", min = "1", max = "32767", step = "1" })
+    @Html.ValidationMessageFor(m => m.BoNhoGB, "", new { @class = "text-danger" })
+</div>
+<p>Giá không âm, tối đa 9999999999999999.99 và 2 chữ số thập phân.</p>
+<div class="mb-3">
+    @Html.LabelFor(m => m.GiaNhap, new { @class = "form-label" })
+    @Html.TextBoxFor(m => m.GiaNhap, new { @class = "form-control", inputmode = "decimal", required = "required" })
+    @Html.ValidationMessageFor(m => m.GiaNhap, "", new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(m => m.GiaBan, new { @class = "form-label" })
+    @Html.TextBoxFor(m => m.GiaBan, new { @class = "form-control", inputmode = "decimal", required = "required" })
+    @Html.ValidationMessageFor(m => m.GiaBan, "", new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(m => m.HinhAnhUrl, new { @class = "form-label" })
+    @Html.TextBoxFor(m => m.HinhAnhUrl, new { @class = "form-control", maxlength = "500" })
+    <small>Để trống hoặc nhập /images/ten-anh.jpg. Không tải ảnh lên ở đây.</small>
+    @Html.ValidationMessageFor(m => m.HinhAnhUrl, "", new { @class = "text-danger" })
+</div>
+<div class="form-check mb-3">
+    @Html.CheckBoxFor(m => m.TrangThai, new { @class = "form-check-input" })
+    @Html.LabelFor(m => m.TrangThai, new { @class = "form-check-label" })
+    <p>Bỏ chọn để ngừng kinh doanh biến thể trong quản trị. Giữ nguyên đơn hàng, giỏ hàng, phiếu nhập và tồn kho liên quan.</p>
+</div>

@@ -1,0 +1,25 @@
+@model IEnumerable<QuanLiDienThoaiDD.Areas.Admin.ViewModels.ProductViewModel>
+@{ ViewBag.Title = "Sản phẩm"; }
+<h1>Sản phẩm</h1>
+@if (TempData["ProductSuccess"] != null)
+{ <div class="alert alert-success" role="status">@TempData["ProductSuccess"]</div> }
+<p>@Html.ActionLink("Thêm sản phẩm", "Create", null, new { @class = "btn btn-primary" })</p>
+<p>Chọn Chỉnh sửa để ngừng kinh doanh. Sản phẩm và các biến thể được giữ lại.</p>
+<div class="table-responsive">
+<table class="table table-striped">
+    <caption>Sản phẩm đang và ngừng kinh doanh</caption>
+    <thead><tr><th scope="col">Mã</th><th scope="col">Tên</th><th scope="col">Mã loại</th><th scope="col">Mã thương hiệu</th><th scope="col">Mã NCC mặc định</th><th scope="col">Bảo hành (tháng)</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.MaSanPham</td><td>@item.TenSanPham</td><td>@item.MaLoai</td><td>@item.MaThuongHieu</td><td>@item.MaNCCMacDinh</td><td>@item.BaoHanhThang</td>
+            <td>@(item.TrangThai ? "Đang kinh doanh" : "Ngừng kinh doanh")</td>
+            <td>@Html.ActionLink("Chỉnh sửa", "Edit", new { id = item.MaSanPham }) |
+                @Html.ActionLink("Biến thể", "Index", "ProductVariants", new { area = "Admin", productId = item.MaSanPham }, null)</td>
+        </tr>
+    }
+    @if (!Model.Any()) { <tr><td colspan="8">Chưa có sản phẩm.</td></tr> }
+    </tbody>
+</table>
+</div>
