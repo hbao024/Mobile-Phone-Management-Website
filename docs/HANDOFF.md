@@ -1,23 +1,26 @@
-# Bàn giao — CAT-05 / NgoThanhDat
+# Bàn giao — CAT-06 / NgoThanhDat
 
-Snapshot 2026-11-18 (Asia/Saigon). Quy trình: [AGENTS.md](../AGENTS.md); phạm vi tại D-016 trong [decisions.md](decisions.md), chi tiết tại [contract](contracts/catalog-inventory.md#ảnh-biến-thể-cat-05). Dừng để review, không chuyển bước tiếp theo.
+Snapshot 2026-11-18 (Asia/Saigon). Quy trình: [AGENTS.md](../AGENTS.md); phạm vi được duyệt tại D-017 trong [decisions.md](decisions.md). Dừng review, không tự chuyển CAT-07.
 
 ## Git và phạm vi
 
-- Tiếp tục `NgoThanhDat`, HEAD lúc kiểm tra trước commit CAT-05: `943ebffba6357f4664e317cef08ff95c2b198346` (commit CAT-04). Đã đọc commit/source thực tế và xác minh `git ls-remote --heads origin NgoThanhDat` cùng SHA lúc bắt đầu; snapshot CAT-04 ghi HEAD trước commit, không có thay đổi source phát sinh ngoài commit đó.
-- Không tạo branch/PR, merge, force-push. `.vscode/settings.json` và `foundation-review.patch` untracked có sẵn được giữ nguyên, không commit.
-- Thay đổi controller/ViewModel và ba view ProductVariants của Đạt; một helper ảnh trong Areas/Admin; `.csproj` (Hoàng Bảo điều phối) chỉ đăng ký helper, dùng System.Drawing sẵn có. Thêm tests/CAT-05, cập nhật contract/decisions/HANDOFF. Không sửa code Nhàn/Tân, storefront, auth/layout, schema/EDMX/generated, kho hoặc dependency.
-- Phiên được giao commit/push lên `NgoThanhDat` rồi dừng review. SHA của commit chứa HANDOFF đọc lại từ Git, không tự gán trong file này; kiểm tra staging/status và remote sau push trong kết quả phiên.
+- Branch `NgoThanhDat`; HEAD trước CAT-06 `51e9c60f7bc88b184c9ff614db1153aa8802dc48`. Đã đọc commit CAT-05/source và đối chiếu snapshot bàn giao ghi SHA trước commit; local/remote khớp qua ls-remote lúc bắt đầu.
+- Chỉ sửa ProductsController, Products/Index và thêm tests/CAT-06; cập nhật decisions/HANDOFF. Không sửa storefront Nhàn/module Tân, schema/EDMX/generated, kho, auth/layout, project/dependency hoặc service.
+- Giữ nguyên `.vscode/settings.json` và `foundation-review.patch` untracked có sẵn, không commit. Phiên được giao commit/push branch hiện tại, không tạo branch/PR/merge. SHA commit chứa tài liệu này đọc lại từ Git và đối chiếu remote sau push.
 
-## Hành vi và bằng chứng
+## Hành vi
 
-- Upload JPEG/PNG từ Create/Edit, tên GUID, chuẩn hóa PNG, URL `/images/variants/...`; validation định dạng/MIME/nội dung, 2 MiB và giới hạn pixel. Hiển thị ảnh DB, preview, thay/bỏ ảnh; giữ đường dẫn ảnh cũ tương thích storefront. Chi tiết và chính sách giữ file cũ/lỗi bù tại contract, không tạo cơ chế dọn dữ liệu cũ.
-- Build Debug solution bằng VS MSBuild `C:/Program Files/Microsoft Visual Studio/18/Community/MSBuild/Current/Bin/MSBuild.exe`: thành công; chỉ còn cảnh báo binding MSB3247 hiện hữu.
-- `powershell -NoProfile -ExecutionPolicy Bypass -File tests/CAT-05/Run.ps1`: **100/100** kiểm tra file thật/GDI+/gọi controller với DB giả; script preview và multipart đạt kiểm tra bằng Node với DOM giả. Gồm JPEG/PNG, tên traversal được thay bằng tên server, file rỗng/giả/hỏng/sai MIME/đuôi, quá byte/pixel, ContentLength sai, đúng 2 MiB, bỏ payload, 12 upload đồng thời trùng tên đầu vào, giữ ảnh dùng chung, thay/bỏ, lỗi ghi filesystem thật, lỗi DB/concurrency giả, commit-rồi-báo-lỗi, kết quả lưu không rõ dù không có tham chiếu DB và lỗi truy vấn/dọn file.
-- Hồi quy bằng `tests/CAT-01/Run.ps1` **31/31**, CAT-02 **80/80**, CAT-03 **64/64**, CAT-04 **211/211**. Bao gồm parse/compile Razor, validation/overposting và metadata ADMIN/POST/anti-forgery. Không coi metadata là đã kiểm filter qua HTTP. Dữ liệu/file test ở thư mục `obj/Cat05Checks`, không dùng ảnh hoặc dữ liệu ứng dụng.
+- GET Admin Products tìm chuỗi con theo mã/tên sản phẩm hoặc SKU (gồm biến thể ngừng bán), EXISTS tránh lặp sản phẩm. Lọc loại/thương hiệu kể cả danh mục ngừng dùng; trạng thái là trạng thái sản phẩm.
+- Sắp xếp tên tăng/giảm, ngày tạo mới/cũ, mã; mã sản phẩm là khóa phụ ổn định. Count và Skip/Take trên IQueryable EF6, chỉ lấy 20 dòng/trang trước ToList; dropdown danh mục lấy riêng, không tải toàn bộ sản phẩm.
+- Form GET áp dụng bộ lọc về trang đầu, bốn liên kết Đầu/Trước/Sau/Cuối giữ điều kiện. Hiển thị tổng/trang và kết quả rỗng; không dựng hàng nghìn link.
+- Trang sai định dạng/âm/0/overflow về 1; vượt tổng trang về trang cuối; trạng thái/sort lạ về mặc định kèm thông báo. Filter mã không tồn tại cho kết quả rỗng và giữ lựa chọn; q >200, mã loại/thương hiệu >10 trả HTTP 400.
+- Thứ tự có khóa phụ nhưng dữ liệu thay đổi giữa hai request hoặc giữa Count và lấy trang vẫn có thể đổi kết quả. Không thêm snapshot transaction. So khớp hoa/thường/dấu theo collation SQL, chưa xác minh trên DB thật.
 
-## Giới hạn cần review
+## Kiểm chứng và giới hạn
 
-- Project vẫn thiếu Web.config gốc, startup gọi seed, chưa có database kiểm thử an toàn được chỉ định: không chạy ứng dụng IIS/SQL/seed. **Chưa xác minh** UI trình duyệt/multipart HTTP, auth/CSRF thực tế, SQL persistence/transaction/collation/concurrency hoặc quyền ghi IIS và giới hạn request host.
-- Cơ chế dọn file sau lỗi DB chỉ áp dụng khi xác nhận chưa lưu/rollback và không có tham chiếu; giữ file khi kết quả lưu không rõ hoặc không xác minh được. Không có transaction chung filesystem/SQL. Chưa nghiệm thu race tham chiếu/cleanup; crash tiến trình hoặc lỗi dọn có thể để file dư, cần đối soát riêng. Không tự dọn ảnh cũ vì giỏ hàng/session có thể còn dùng.
-- Giữ các giới hạn CAT-04: chưa có concurrency token, sửa đồng thời có thể ghi đè; storefront/checkout chưa lọc đầy đủ trạng thái catalog; tạo biến thể không tự tạo TONKHO. Không xử lý các mục này trong CAT-05.
+- VS MSBuild Debug solution thành công; chỉ cảnh báo MSB3247 binding hiện hữu.
+- `tests/CAT-06/Run.ps1`: **31/31**, gồm dữ liệu giả 45 sản phẩm, tìm mã/tên/SKU, chống lặp do nhiều SKU, lọc kết hợp, các sort/tie, trang đầu/giữa/cuối/rỗng/overflow, không ghi DB/đọc kho; kiểm tra source bốn link giữ tham số.
+- Trong bộ trên, EF6 thực sự sinh SQL offline từ phương thức truy vấn production cho năm kiểu sort, có tìm SKU/filters/Skip/Take. Dùng EDMX hiện tại, tắt initializer và connection giả `invalid.invalid`; không thực thi SQL. Không coi sinh SQL là bằng chứng kết quả/performance/collation DB.
+- Hồi quy thực chạy CAT-01 **31/31**, CAT-02 **80/80**, CAT-03 **64/64**, CAT-04 **211/211** (gồm parse/compile Razor Products/Index), CAT-05 **100/100** + script preview DOM giả đạt.
+- Chưa có DB kiểm thử an toàn được chỉ định, Web.config gốc vẫn thiếu và startup gọi seed: không khởi động IIS/app, không chạy SQL/seed. UI/HTTP binding/auth/CSRF, SQL thực thi/query plan/collation và concurrency chưa nghiệm thu. Test metadata ADMIN không chứng minh filter HTTP.
+- Giới hạn CAT-04/05 vẫn giữ: chưa concurrency token, storefront chưa lọc đầy đủ trạng thái, biến thể mới không tự tạo tồn; file ảnh cũ được giữ để bảo vệ tham chiếu, lỗi lưu không rõ có thể giữ file dư.

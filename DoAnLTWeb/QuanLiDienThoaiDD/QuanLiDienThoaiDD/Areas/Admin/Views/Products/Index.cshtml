@@ -1,6 +1,23 @@
 @model IEnumerable<QuanLiDienThoaiDD.Areas.Admin.ViewModels.ProductViewModel>
 @{ ViewBag.Title = "Sản phẩm"; }
 <h1>Sản phẩm</h1>
+@using (Html.BeginForm("Index", "Products", FormMethod.Get))
+{
+    <label for="q">Mã, tên sản phẩm hoặc SKU</label>
+    @Html.TextBox("q", (string)ViewBag.Search, new { maxlength = "200" })
+    <label for="category">Loại</label>
+    @Html.DropDownList("category", (IEnumerable<SelectListItem>)ViewBag.FilterCategories, "Tất cả")
+    <label for="brand">Thương hiệu</label>
+    @Html.DropDownList("brand", (IEnumerable<SelectListItem>)ViewBag.FilterBrands, "Tất cả")
+    <label for="state">Trạng thái sản phẩm</label>
+    @Html.DropDownList("state", new SelectList(new[] { new { Value = "", Text = "Tất cả" }, new { Value = "active", Text = "Đang kinh doanh" }, new { Value = "inactive", Text = "Ngừng kinh doanh" } }, "Value", "Text", (string)ViewBag.State))
+    <label for="sort">Sắp xếp</label>
+    @Html.DropDownList("sort", new SelectList(new[] { new { Value = "name", Text = "Tên A–Z" }, new { Value = "name_desc", Text = "Tên Z–A" }, new { Value = "newest", Text = "Ngày tạo mới nhất" }, new { Value = "oldest", Text = "Ngày tạo cũ nhất" }, new { Value = "code", Text = "Mã sản phẩm" } }, "Value", "Text", (string)ViewBag.Sort))
+    <button type="submit" class="btn btn-primary">Tìm / lọc</button>
+    @Html.ActionLink("Xóa bộ lọc", "Index")
+}
+@if (ViewBag.Adjusted) { <p role="status">Tham số trang hoặc sắp xếp/trạng thái không hợp lệ đã được điều chỉnh.</p> }
+<p>@ViewBag.Total sản phẩm. Trang @ViewBag.Page / @ViewBag.Pages.</p>
 @if (TempData["ProductSuccess"] != null)
 { <div class="alert alert-success" role="status">@TempData["ProductSuccess"]</div> }
 <p>@Html.ActionLink("Thêm sản phẩm", "Create", null, new { @class = "btn btn-primary" })</p>
@@ -19,7 +36,19 @@
                 @Html.ActionLink("Biến thể", "Index", "ProductVariants", new { area = "Admin", productId = item.MaSanPham }, null)</td>
         </tr>
     }
-    @if (!Model.Any()) { <tr><td colspan="8">Chưa có sản phẩm.</td></tr> }
+    @if (!Model.Any()) { <tr><td colspan="8">Không có sản phẩm phù hợp.</td></tr> }
     </tbody>
 </table>
 </div>
+<nav aria-label="Phân trang sản phẩm">
+@if (ViewBag.Page > 1)
+{
+    @Html.ActionLink("Đầu", "Index", new { q = (string)ViewBag.Search, category = (string)ViewBag.Category, brand = (string)ViewBag.Brand, state = (string)ViewBag.State, sort = (string)ViewBag.Sort, page = 1 })
+    @Html.ActionLink("Trước", "Index", new { q = (string)ViewBag.Search, category = (string)ViewBag.Category, brand = (string)ViewBag.Brand, state = (string)ViewBag.State, sort = (string)ViewBag.Sort, page = (int)ViewBag.Page - 1 })
+}
+@if (ViewBag.Page < ViewBag.Pages)
+{
+    @Html.ActionLink("Sau", "Index", new { q = (string)ViewBag.Search, category = (string)ViewBag.Category, brand = (string)ViewBag.Brand, state = (string)ViewBag.State, sort = (string)ViewBag.Sort, page = (int)ViewBag.Page + 1 })
+    @Html.ActionLink("Cuối", "Index", new { q = (string)ViewBag.Search, category = (string)ViewBag.Category, brand = (string)ViewBag.Brand, state = (string)ViewBag.State, sort = (string)ViewBag.Sort, page = (int)ViewBag.Pages })
+}
+</nav>

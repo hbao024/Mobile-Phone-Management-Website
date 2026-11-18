@@ -1,4 +1,5 @@
 using System;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
@@ -13,14 +14,60 @@ namespace QuanLiDienThoaiDD.Areas.Admin.Controllers
     {
         private readonly QLHANGHOA_PHUKIEN_WEBEntities db = new QLHANGHOA_PHUKIEN_WEBEntities();
 
-        public ActionResult Index()
+        public ActionResult Index(string q = null, string category = null, string brand = null,
+            string state = null, string sort = null, string page = null)
         {
-            return View(db.SANPHAMs.OrderBy(x => x.TenSanPham).Select(x => new ProductViewModel
+            q = (q ?? "").Trim();
+            category = (category ?? "").Trim();
+            brand = (brand ?? "").Trim();
+            if (q.Length > 200 || category.Length > 10 || brand.Length > 10)
+                return new HttpStatusCodeResult(400, "Invalid filter length.");
+            var adjusted = false;
+            if (state != null && state != "" && state != "active" && state != "inactive") { state = ""; adjusted = true; }
+            if (string.IsNullOrEmpty(sort)) sort = "name";
+            if (!new[] { "name", "name_desc", "newest", "oldest", "code" }.Contains(sort)) { sort = "name"; adjusted = true; }
+            int current;
+            if (!int.TryParse(page ?? "1", out current) || current < 1) { current = 1; adjusted = true; }
+            var query = ProductQuery(q, category, brand, state, sort);
+            var total = query.Count();
+            const int size = 20;
+            var pages = Math.Max(1, total / size + (total % size == 0 ? 0 : 1));
+            if (current > pages) { current = pages; adjusted = true; }
+            ViewBag.Search = q; ViewBag.Category = category; ViewBag.Brand = brand;
+            ViewBag.State = state; ViewBag.Sort = sort; ViewBag.Page = current;
+            ViewBag.Pages = pages; ViewBag.Total = total; ViewBag.Adjusted = adjusted;
+            var categories = db.LOAISANPHAMs.OrderBy(x => x.TenLoai).ToList()
+                .Select(x => new SelectListItem { Value = x.MaLoai, Text = x.TenLoai + (x.TrangThai ? "" : " (ngừng sử dụng)"), Selected = x.MaLoai == category }).ToList();
+            var brands = db.THUONGHIEUx.OrderBy(x => x.TenThuongHieu).ToList()
+                .Select(x => new SelectListItem { Value = x.MaThuongHieu, Text = x.TenThuongHieu + (x.TrangThai ? "" : " (ngừng sử dụng)"), Selected = x.MaThuongHieu == brand }).ToList();
+            if (category != "" && !categories.Any(x => x.Value == category)) categories.Add(new SelectListItem { Value = category, Text = "Không tìm thấy: " + category, Selected = true });
+            if (brand != "" && !brands.Any(x => x.Value == brand)) brands.Add(new SelectListItem { Value = brand, Text = "Không tìm thấy: " + brand, Selected = true });
+            ViewBag.FilterCategories = categories; ViewBag.FilterBrands = brands;
+            return View(query.Skip((current - 1) * size).Take(size).Select(x => new ProductViewModel
             {
                 MaSanPham = x.MaSanPham, TenSanPham = x.TenSanPham, MaLoai = x.MaLoai,
                 MaThuongHieu = x.MaThuongHieu, MaNCCMacDinh = x.MaNCCMacDinh,
                 MoTa = x.MoTa, BaoHanhThang = x.BaoHanhThang, TrangThai = x.TrangThai
             }).ToList());
+        }
+
+        private IQueryable<SANPHAM> ProductQuery(string q, string category, string brand, string state, string sort)
+        {
+            var query = db.SANPHAMs.AsNoTracking().AsQueryable();
+            if (q != "") query = query.Where(x => x.MaSanPham.Contains(q) || x.TenSanPham.Contains(q)
+                || db.BIENSANPHAMs.Any(v => v.MaSanPham == x.MaSanPham && v.SKU.Contains(q)));
+            if (category != "") query = query.Where(x => x.MaLoai == category);
+            if (brand != "") query = query.Where(x => x.MaThuongHieu == brand);
+            if (state == "active") query = query.Where(x => x.TrangThai);
+            if (state == "inactive") query = query.Where(x => !x.TrangThai);
+            switch (sort)
+            {
+                case "name_desc": return query.OrderByDescending(x => x.TenSanPham).ThenBy(x => x.MaSanPham);
+                case "newest": return query.OrderByDescending(x => x.NgayTao).ThenBy(x => x.MaSanPham);
+                case "oldest": return query.OrderBy(x => x.NgayTao).ThenBy(x => x.MaSanPham);
+                case "code": return query.OrderBy(x => x.MaSanPham);
+                default: return query.OrderBy(x => x.TenSanPham).ThenBy(x => x.MaSanPham);
+            }
         }
 
         public ActionResult Create()
