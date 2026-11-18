@@ -1,0 +1,42 @@
+@model IEnumerable<QuanLiDienThoaiDD.Areas.Admin.ViewModels.CategoryViewModel>
+@{
+    ViewBag.Title = "Loại sản phẩm";
+}
+
+<h1>Loại sản phẩm</h1>
+@if (TempData["CategorySuccess"] != null)
+{
+    <div class="alert alert-success" role="status">@TempData["CategorySuccess"]</div>
+}
+<p>@Html.ActionLink("Thêm loại sản phẩm", "Create", null, new { @class = "btn btn-primary" })</p>
+<p>Chọn Chỉnh sửa để thay đổi thông tin hoặc ngừng sử dụng. Dữ liệu liên quan được giữ nguyên.</p>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <caption>Danh sách loại sản phẩm, bao gồm các loại đã ngừng sử dụng</caption>
+        <thead>
+            <tr>
+                <th scope="col">Mã loại</th>
+                <th scope="col">Tên loại</th>
+                <th scope="col">Mô tả</th>
+                <th scope="col">Trạng thái</th>
+                <th scope="col">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.MaLoai</td>
+                    <td>@item.TenLoai</td>
+                    <td style="white-space: pre-wrap; overflow-wrap: anywhere;">@item.MoTa</td>
+                    <td>@(item.TrangThai ? "Đang sử dụng" : "Ngừng sử dụng")</td>
+                    <td>@Html.ActionLink("Chỉnh sửa", "Edit", new { id = item.MaLoai }, new { aria_label = "Chỉnh sửa " + item.TenLoai })</td>
+                </tr>
+            }
+            @if (!Model.Any())
+            {
+                <tr><td colspan="5">Chưa có loại sản phẩm.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

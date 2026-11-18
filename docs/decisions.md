@@ -20,5 +20,6 @@ Nguồn duyệt hiện tại là chỉ đạo người dùng trong hội thoại
 | D-008 | Chính sách catalog, giá, giữ hàng và hoàn kho tại [contract](contracts/catalog-inventory.md#nội-dung-đề-xuất-cho-d-008) | OPEN | Nhóm cần chốt trước triển khai; chưa chọn giữ hàng, thời điểm giá hay điều kiện hoàn khi đang giao |
 | D-009 | Ma trận quyền và ownership điều phối tại [kiến trúc](architecture.md#ownership-file-dùng-chung) | OPEN | Phân công chức năng có nguồn tham khảo; quyền nghiệp vụ và người điều phối cần xác nhận |
 | D-010 | Concurrency, chống lặp và sinh mã tại [contract](contracts/catalog-inventory.md#nội-dung-đề-xuất-cho-d-010) | PROPOSED | Cần review schema, điểm gọi và kiểm chứng liên module trước triển khai |
+| D-011 | Triển khai CAT-01 quản lý loại sản phẩm trong Admin bằng `LOAISANPHAM`/DbContext hiện có; không đổi schema, authentication, layout chung hoặc storefront | APPROVED | Chỉ đạo CAT-01 của người dùng ngày 2026-11-18: tạo branch từ commit nền chỉ định, kiểm chứng, commit, push và tạo Draft PR vào `integration/foundation`; không merge hoặc chuyển CAT-02 trước review. Không phê duyệt toàn bộ D-008/D-009/D-010 |
 
 Điểm review tiếp theo: xử lý các mục OPEN/PROPOSED cần cho gói tích hợp kế tiếp; không coi kết thúc gói tài liệu là phê duyệt các mục đó.

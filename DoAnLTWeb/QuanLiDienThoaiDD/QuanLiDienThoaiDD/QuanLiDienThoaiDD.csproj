@@ -146,6 +146,8 @@
     <Compile Include="ViewModels\AuthViewModels.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\DashboardController.cs" />
+    <Compile Include="Areas\Admin\Controllers\CategoriesController.cs" />
+    <Compile Include="Areas\Admin\ViewModels\CategoryViewModels.cs" />
     <Compile Include="Areas\Admin\ViewModels\DashboardViewModel.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -209,6 +211,10 @@
     <Content Include="Areas\Admin\Views\_ViewStart.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\_Layout.cshtml" />
     <Content Include="Areas\Admin\Views\Dashboard\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Categories\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Categories\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\Categories\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\Categories\_Fields.cshtml" />
     <Content Include="Views\LoaiSanPham\LoaiSanPhamPartial.cshtml" />
     <Content Include="Views\Shared\UserLayout.cshtml" />
     <Content Include="Views\SanPham\Index.cshtml" />

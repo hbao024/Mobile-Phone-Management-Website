@@ -1,0 +1,17 @@
+@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.CategoryEditViewModel
+
+<div class="mb-3">
+    @Html.LabelFor(m => m.TenLoai, new { @class = "form-label" })
+    @Html.TextBoxFor(m => m.TenLoai, new { @class = "form-control", maxlength = "100", required = "required" })
+    @Html.ValidationMessageFor(m => m.TenLoai, "", new { @class = "text-danger" })
+</div>
+<div class="mb-3">
+    @Html.LabelFor(m => m.MoTa, new { @class = "form-label" })
+    @Html.TextAreaFor(m => m.MoTa, new { @class = "form-control", maxlength = "500", rows = "4" })
+    @Html.ValidationMessageFor(m => m.MoTa, "", new { @class = "text-danger" })
+</div>
+<div class="form-check mb-3">
+    @Html.CheckBoxFor(m => m.TrangThai, new { @class = "form-check-input", aria_describedby = "category-status-help" })
+    @Html.LabelFor(m => m.TrangThai, new { @class = "form-check-label" })
+    <p id="category-status-help">Bỏ chọn để ngừng sử dụng loại trong quản trị. Không xóa loại hoặc sản phẩm liên quan.</p>
+</div>
