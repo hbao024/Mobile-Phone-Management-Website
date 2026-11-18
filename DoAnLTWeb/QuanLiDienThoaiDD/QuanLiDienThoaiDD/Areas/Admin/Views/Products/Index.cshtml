@@ -1,6 +1,7 @@
 @model IEnumerable<QuanLiDienThoaiDD.Areas.Admin.ViewModels.ProductViewModel>
 @{ ViewBag.Title = "Sản phẩm"; }
 <h1>Sản phẩm</h1>
+<p>@Html.ActionLink("Xem tồn kho", "Index", "Inventory")</p>
 @using (Html.BeginForm("Index", "Products", FormMethod.Get))
 {
     <label for="q">Mã, tên sản phẩm hoặc SKU</label>

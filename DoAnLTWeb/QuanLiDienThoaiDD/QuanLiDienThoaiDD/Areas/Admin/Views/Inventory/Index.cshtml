@@ -1,0 +1,53 @@
+@model IEnumerable<QuanLiDienThoaiDD.Areas.Admin.ViewModels.InventoryRowViewModel>
+@{ ViewBag.Title = "Tồn kho"; }
+<h1>Tồn kho theo biến thể</h1>
+<p>Thông tin chỉ đọc. Chưa có bản ghi tồn khác với tồn bằng 0. Số lượng đang đặt hiển thị theo dữ liệu hiện có; chưa dùng để tính số lượng khả dụng.</p>
+@using (Html.BeginForm("Index", "Inventory", FormMethod.Get))
+{
+    <label for="q">Mã biến thể, SKU, mã hoặc tên sản phẩm</label>
+    @Html.TextBox("q", (string)ViewBag.Search, new { maxlength = "200" })
+    <label for="state">Trạng thái biến thể</label>
+    @Html.DropDownList("state", new SelectList(new[] { new { Value = "", Text = "Tất cả" }, new { Value = "active", Text = "Đang kinh doanh" }, new { Value = "inactive", Text = "Ngừng kinh doanh" } }, "Value", "Text", (string)ViewBag.State))
+    <label for="productState">Trạng thái sản phẩm</label>
+    @Html.DropDownList("productState", new SelectList(new[] { new { Value = "", Text = "Tất cả" }, new { Value = "active", Text = "Đang kinh doanh" }, new { Value = "inactive", Text = "Ngừng kinh doanh" } }, "Value", "Text", (string)ViewBag.ProductState))
+    <label for="stock">Bản ghi tồn</label>
+    @Html.DropDownList("stock", new SelectList(new[] { new { Value = "", Text = "Tất cả" }, new { Value = "missing", Text = "Chưa có TONKHO" }, new { Value = "present", Text = "Đã có TONKHO" } }, "Value", "Text", (string)ViewBag.Stock))
+    <button type="submit" class="btn btn-primary">Tìm / lọc</button>
+    @Html.ActionLink("Xóa bộ lọc", "Index")
+}
+@if (ViewBag.Adjusted) { <p role="status">Tham số không hợp lệ hoặc trang vượt giới hạn đã được điều chỉnh.</p> }
+<p>@ViewBag.Total biến thể. Trang @ViewBag.Page / @ViewBag.Pages.</p>
+<div class="table-responsive">
+<table class="table table-striped">
+    <caption>Tồn hiện tại, không tự tạo hoặc điều chỉnh dữ liệu kho</caption>
+    <thead><tr><th>Mã biến thể / SKU</th><th>Sản phẩm</th><th>Trạng thái biến thể / sản phẩm</th><th>Bản ghi tồn</th><th>Số lượng tồn</th><th>Đang đặt</th><th>Cập nhật tồn</th></tr></thead>
+    <tbody>
+    @foreach (var row in Model)
+    {
+        <tr>
+            <td>@row.MaBienSanPham / @row.SKU</td>
+            <td>@row.MaSanPham — @row.TenSanPham</td>
+            <td>@(row.VariantActive ? "Đang kinh doanh" : "Ngừng kinh doanh") / @(row.ProductActive ? "Đang kinh doanh" : "Ngừng kinh doanh")</td>
+            <td>@(row.SoLuongTon.HasValue ? "Đã có" : "Chưa có TONKHO")</td>
+            <td>@(row.SoLuongTon.HasValue ? row.SoLuongTon.Value.ToString() : "—")</td>
+            <td>@(row.SoLuongDangDat.HasValue ? row.SoLuongDangDat.Value.ToString() : "—")</td>
+            <td>@(row.NgayCapNhat.HasValue ? row.NgayCapNhat.Value.ToString("dd/MM/yyyy HH:mm:ss") : "—")</td>
+        </tr>
+    }
+    @if (!Model.Any()) { <tr><td colspan="7">Không có biến thể phù hợp.</td></tr> }
+    </tbody>
+</table>
+</div>
+<nav aria-label="Phân trang tồn kho">
+@if (ViewBag.Page > 1)
+{
+    @Html.ActionLink("Đầu", "Index", new { q = (string)ViewBag.Search, state = (string)ViewBag.State, productState = (string)ViewBag.ProductState, stock = (string)ViewBag.Stock, page = 1 })
+    @Html.ActionLink("Trước", "Index", new { q = (string)ViewBag.Search, state = (string)ViewBag.State, productState = (string)ViewBag.ProductState, stock = (string)ViewBag.Stock, page = (int)ViewBag.Page - 1 })
+}
+@if (ViewBag.Page < ViewBag.Pages)
+{
+    @Html.ActionLink("Sau", "Index", new { q = (string)ViewBag.Search, state = (string)ViewBag.State, productState = (string)ViewBag.ProductState, stock = (string)ViewBag.Stock, page = (int)ViewBag.Page + 1 })
+    @Html.ActionLink("Cuối", "Index", new { q = (string)ViewBag.Search, state = (string)ViewBag.State, productState = (string)ViewBag.ProductState, stock = (string)ViewBag.Stock, page = (int)ViewBag.Pages })
+}
+</nav>
+<p>@Html.ActionLink("Về sản phẩm", "Index", "Products")</p>

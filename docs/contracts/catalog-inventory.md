@@ -39,6 +39,28 @@ Phạm vi và căn cứ tại D-016 trong [sổ quyết định](../decisions.md
 - Giữ nguyên file ảnh cũ khi thay/bỏ, kể cả ảnh upload trước đó: biến thể khác, logo hoặc giỏ hàng trong session có thể còn dùng. Chưa có cơ chế thu gom file cũ; dung lượng có thể tăng, việc dọn cần đối soát riêng.
 - Nếu ghi file lỗi, không gọi SaveChanges; dọn phần file đã tạo trong khả năng filesystem cho phép. Nếu lưu DB lỗi, chỉ thử xóa file mới khi lỗi xác nhận chưa lưu/rollback (EF validation, EF concurrency hoặc SQL duplicate 2601/2627), đồng thời truy vấn AsNoTracking xác nhận không có biến thể/logo local tham chiếu. Nếu kết quả lưu không rõ, truy vấn hoặc xóa thất bại thì giữ file và ghi Trace để đối soát. Không suy luận chưa từng commit chỉ từ việc không tìm thấy tham chiếu hiện tại: session có thể đã giữ URL. Không xóa ảnh cũ. Filesystem không cùng transaction SQL; lỗi tiến trình/host hoặc DB không xác minh được có thể để lại file dư. Race tham chiếu/cleanup liên request chưa được kiểm chứng trên SQL.
 
+## Xem tồn và điểm tích hợp CAT-07
+
+Phạm vi xem tồn tại D-018; cơ chế ghi chung cần chốt tại D-019 trong [sổ quyết định](../decisions.md). SHA branch Tân đã đối chiếu nằm tại HANDOFF; các đường dẫn/line dưới đây thuộc snapshot đó, không phải code đã nhập vào branch Đạt.
+
+- `/Admin/Inventory` chỉ GET, ADMIN, bắt đầu từ BIENSANPHAM nối SANPHAM và left join TONKHO theo mã biến thể. Không có TONKHO thì số lượng/ngày là chưa có dữ liệu, không thay bằng 0 hoặc ngày hiện tại. Hiển thị riêng trạng thái sản phẩm/biến thể và hai số lượng lưu thực tế; không tính “khả dụng” khi chưa chốt nghĩa SoLuongDangDat. Không truy cập/ghi GIAODICHKHO để dựng số tồn.
+- Tìm mã biến thể/SKU/mã hoặc tên sản phẩm, lọc hai trạng thái và có/chưa có TONKHO, phân trang server 20 dòng với thứ tự tên/mã sản phẩm/mã biến thể. Không tạo tồn để hiển thị. Tìm quá 200 ký tự trả 400; tham số lọc lạ về tất cả, trang sai về 1 hoặc kẹp trang cuối kèm thông báo. Kết quả đọc tại thời điểm truy vấn, không đảm bảo snapshot giữa Count/lấy trang hoặc giữa các request.
+- Schema hiện có: TONKHO có PK/FK MaBienSanPham, hai số lượng int không âm và NgayCapNhat; không có ràng buộc DangDat <= Ton. GIAODICHKHO có identity bigint, loại NHAP/BAN/TRA_HANG/DIEU_CHINH_TANG/DIEU_CHINH_GIAM, số lượng dương, tồn trước/sau không âm, liên kết phiếu/đơn/NV và ghi chú. Đây là kiểm tra source SQL/EDMX, không phải schema DB runtime.
+
+| Điểm ghi của Tân (`QuanLiDienThoaiDD/Areas/Admin/Controllers/`) | Hành vi hiện có từ source |
+|---|---|
+| `StockReceiptsController.Create` (266), `ConfirmReceipt` (406) → `ApplyStockReceiptToInventory` (505–555) | Chỉ DA_NHAP cộng tồn/ghi NHAP; thiếu TONKHO thì tạo 0 trước khi cộng; cập nhật ngày, GiaNhap nếu đơn giá >0. Phiếu/chi tiết/tồn/log cùng transaction. CHO_XU_LY chưa cộng; CancelReceipt (469) chỉ hủy phiếu chờ, không đảo phiếu đã nhập |
+| `OrdersController.ProcessStatusTransition` (277–484) | CHO_XAC_NHAN → DA_XAC_NHAN kiểm đủ tồn, trừ tồn/ghi BAN; giảm DangDat nếu đủ. Hủy từ DA_XAC_NHAN hoặc DANG_GIAO cộng lại/ghi TRA_HANG, có tạo TONKHO nếu thiếu. Trạng thái/lịch sử/tồn/log cùng transaction |
+| `OrdersController.Create` (499–701), nhánh XacNhanNgay (636–678) | Có kiểm tồn cả khi tạo đơn chờ; xác nhận ngay có nhánh trừ tồn/ghi BAN riêng, không giảm DangDat như ProcessStatusTransition. Tạo chờ chưa trừ/giữ tồn |
+
+Các điểm cần nhóm chốt trước khi mở thao tác điều chỉnh (D-019, liên quan D-008/D-010):
+
+- Tân và Đạt thống nhất một routine ghi dùng chung, bao phủ cả ba điểm ghi trên và điều chỉnh tương lai. Routine private hiện tại chỉ phục vụ nhập, chưa là API tích hợp. Cần phạm vi duyệt riêng để sửa/extract code Tân; không gọi chéo controller hoặc sao chép writer vào Inventory.
+- Đầu vào đề xuất: mã biến thể, loại tăng/giảm, số lượng nguyên dương, lý do bắt buộc; actor/thời gian lấy server. Số tồn mới tính trên dữ liệu hiện tại, không nhận số tồn trước/sau từ form. Một transaction cập nhật TONKHO và thêm GIAODICHKHO với trước/sau, loại, actor, ngày, ghi chú; không sửa log cũ, giá nhập hoặc chứng từ để giả lập điều chỉnh.
+- Chốt quyền điều chỉnh, chính sách khi thiếu TONKHO, nghĩa/vòng đời DangDat và điều kiện giảm khi đang giữ hàng; không tự reset DangDat. Chốt điều kiện hoàn khi DANG_GIAO và sự khác nhau giữa hai nhánh xác nhận đơn hiện tại.
+- Chốt chống mất cập nhật (ghi có điều kiện/khóa/phiên bản), chống lặp request/xác nhận và rollback khi lỗi ở bất kỳ dòng/log nào. Transaction đọc-rồi-gán hiện có chưa chứng minh chống oversell/lost update; chưa có concurrency token. Nếu chọn đổi schema/EDMX phải duyệt riêng.
+- Bằng chứng cần trước khi nghiệm thu writer: nhập đồng thời bán/điều chỉnh, tranh đơn vị cuối, xác nhận/hủy lặp và đồng thời, rollback nhiều dòng, lỗi commit không rõ, đối soát tồn trước/sau với log. CAT-07 không thực thi các nghiệp vụ đó.
+
 ## Vấn đề cần thống nhất
 
 - Thời điểm chốt giá, đọc lại giá và yêu cầu xác nhận khi giá thay đổi.
