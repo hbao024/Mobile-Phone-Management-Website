@@ -1,4 +1,4 @@
-@{
+﻿@{
     var ghTam = Session["gh"] as QuanLiDienThoaiDD.Models.GioHangTam;
     int soLuongGio = ghTam == null ? 0 : ghTam.TongSLHang();
 
@@ -26,10 +26,10 @@
                 <span>MobileHub</span>
             </a>
 
-            <ul class="navbar-nav flex-row flex-grow-1 ms-3">
-                <li>@Html.ActionLink("Trang chủ", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                <li>@Html.ActionLink("Sản phẩm", "Index", "SanPham", new { area = "" }, new { @class = "nav-link" })</li>
-                <li><span class="nav-link text-muted">Giới thiệu</span></li>
+            <ul class="navbar-nav flex-row flex-grow-1 ms-4 gap-2">
+                <li class="nav-item">@Html.ActionLink("Trang chủ", "Index", "Home", new { area = "" }, new { @class = "nav-link px-3" })</li>
+                <li class="nav-item">@Html.ActionLink("Sản phẩm", "Index", "SanPham", new { area = "" }, new { @class = "nav-link px-3" })</li>
+                <li class="nav-item"><span class="nav-link px-3 text-muted">Giới thiệu</span></li>
             </ul>
 
             <form class="d-flex me-3" action="@Url.Action("TimKiem", "SanPham", new { area = "" })" method="get">
