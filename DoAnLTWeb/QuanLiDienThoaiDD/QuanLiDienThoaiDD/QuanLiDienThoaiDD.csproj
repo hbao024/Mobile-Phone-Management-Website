@@ -161,6 +161,15 @@
     <Compile Include="Areas\Admin\VariantImageStorage.cs" />
     <Compile Include="Areas\Admin\ViewModels\ProductViewModels.cs" />
     <Compile Include="Areas\Admin\ViewModels\DashboardViewModel.cs" />
+    <Compile Include="Areas\Admin\Controllers\CustomersController.cs" />
+    <Compile Include="Areas\Admin\Controllers\OrdersController.cs" />
+    <Compile Include="Areas\Admin\Controllers\ReportsController.cs" />
+    <Compile Include="Areas\Admin\Controllers\StockReceiptsController.cs" />
+    <Compile Include="Areas\Admin\ViewModels\AdminStatusHelper.cs" />
+    <Compile Include="Areas\Admin\ViewModels\CustomerViewModels.cs" />
+    <Compile Include="Areas\Admin\ViewModels\OrderViewModels.cs" />
+    <Compile Include="Areas\Admin\ViewModels\ReportViewModels.cs" />
+    <Compile Include="Areas\Admin\ViewModels\StockReceiptViewModels.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -245,6 +254,17 @@
     <Content Include="Areas\Admin\Views\ProductVariants\Index.cshtml" />
     <Content Include="Areas\Admin\Views\ProductVariants\Create.cshtml" />
     <Content Include="Areas\Admin\Views\ProductVariants\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\Customers\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\Customers\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\Customers\Edit.cshtml" />
+    <Content Include="Areas\Admin\Views\Customers\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Orders\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\Orders\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\Orders\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Reports\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\StockReceipts\Create.cshtml" />
+    <Content Include="Areas\Admin\Views\StockReceipts\Details.cshtml" />
+    <Content Include="Areas\Admin\Views\StockReceipts\Index.cshtml" />
     <Content Include="Areas\Admin\Views\ProductVariants\_Fields.cshtml" />
     <Content Include="Views\LoaiSanPham\LoaiSanPhamPartial.cshtml" />
     <Content Include="Views\Shared\UserLayout.cshtml" />

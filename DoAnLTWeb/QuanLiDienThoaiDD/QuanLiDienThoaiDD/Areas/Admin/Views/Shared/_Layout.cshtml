@@ -1,3 +1,6 @@
+@{
+    var currentController = (ViewContext.RouteData.Values["controller"] as string ?? string.Empty).ToLowerInvariant();
+}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -13,21 +16,41 @@
                 <span class="brand-mark">M</span>
                 <span>MobileHub</span>
             </a>
-            <div class="sidebar-label">QUẢN TRỊ</div>
+            <div class="sidebar-label">QUẢN TRỊ HỆ THỐNG</div>
             <nav class="admin-nav">
-                <a class="admin-nav-link active" href="@Url.Action("Index", "Dashboard", new { area = "Admin" })">
+                <a class="admin-nav-link @(currentController == "dashboard" ? "active" : "")" href="@Url.Action("Index", "Dashboard", new { area = "Admin" })">
                     <span class="nav-icon">⌂</span> Tổng quan
                 </a>
-                <span class="admin-nav-link disabled"><span class="nav-icon">▣</span> Sản phẩm</span>
-                <span class="admin-nav-link disabled"><span class="nav-icon">▤</span> Đơn hàng</span>
-                <span class="admin-nav-link disabled"><span class="nav-icon">▥</span> Kho hàng</span>
-                @if (User.IsInRole("ADMIN"))
-                {
-                    <span class="admin-nav-link disabled"><span class="nav-icon">♙</span> Tài khoản</span>
-                }
+                <a class="admin-nav-link @(currentController == "orders" ? "active" : "")" href="@Url.Action("Index", "Orders", new { area = "Admin" })">
+                    <span class="nav-icon">▤</span> Đơn hàng
+                </a>
+                <a class="admin-nav-link @(currentController == "stockreceipts" ? "active" : "")" href="@Url.Action("Index", "StockReceipts", new { area = "Admin" })">
+                    <span class="nav-icon">▥</span> Nhập hàng
+                </a>
+                <a class="admin-nav-link @(currentController == "inventory" ? "active" : "")" href="@Url.Action("Index", "Inventory", new { area = "Admin" })">
+                    <span class="nav-icon">▦</span> Quản lý kho
+                </a>
+                <a class="admin-nav-link @(currentController == "products" || currentController == "productvariants" ? "active" : "")" href="@Url.Action("Index", "Products", new { area = "Admin" })">
+                    <span class="nav-icon">▣</span> Sản phẩm
+                </a>
+                <a class="admin-nav-link @(currentController == "categories" ? "active" : "")" href="@Url.Action("Index", "Categories", new { area = "Admin" })">
+                    <span class="nav-icon">🏷</span> Danh mục
+                </a>
+                <a class="admin-nav-link @(currentController == "brands" ? "active" : "")" href="@Url.Action("Index", "Brands", new { area = "Admin" })">
+                    <span class="nav-icon">★</span> Thương hiệu
+                </a>
+                <a class="admin-nav-link @(currentController == "suppliers" ? "active" : "")" href="@Url.Action("Index", "Suppliers", new { area = "Admin" })">
+                    <span class="nav-icon">🏢</span> Nhà cung cấp
+                </a>
+                <a class="admin-nav-link @(currentController == "customers" ? "active" : "")" href="@Url.Action("Index", "Customers", new { area = "Admin" })">
+                    <span class="nav-icon">☺</span> Khách hàng
+                </a>
+                <a class="admin-nav-link @(currentController == "reports" ? "active" : "")" href="@Url.Action("Index", "Reports", new { area = "Admin" })">
+                    <span class="nav-icon">📊</span> Báo cáo
+                </a>
             </nav>
             <div class="sidebar-bottom">
-                @Html.ActionLink("Về trang bán hàng", "Index", "Home", new { area = "" }, new { @class = "sidebar-back-link" })
+                @Html.ActionLink("← Về trang bán hàng", "Index", "Home", new { area = "" }, new { @class = "sidebar-back-link" })
             </div>
         </aside>
 
@@ -52,6 +75,20 @@
             </header>
 
             <main class="admin-content">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show flash-message" role="alert">
+                        <strong>Thành công!</strong> @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+                    </div>
+                }
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show flash-message" role="alert">
+                        <strong>Lưu ý:</strong> @TempData["ErrorMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+                    </div>
+                }
                 @RenderBody()
             </main>
         </div>

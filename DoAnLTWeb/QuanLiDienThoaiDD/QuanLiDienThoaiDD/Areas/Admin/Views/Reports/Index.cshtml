@@ -1,0 +1,407 @@
+﻿@model QuanLiDienThoaiDD.Areas.Admin.ViewModels.ReportDashboardViewModel
+@using QuanLiDienThoaiDD.Areas.Admin.ViewModels
+@{
+    ViewBag.Title = "Báo cáo & Thống kê";
+    var maxDailyRev = (Model.RevenueByDates != null && Model.RevenueByDates.Count > 0)
+        ? Model.RevenueByDates.Max(x => x.DoanhThuHopLe)
+        : 0m;
+    var maxProductQty = (Model.ProductSales != null && Model.ProductSales.Count > 0)
+        ? Model.ProductSales.Max(x => x.SoLuongBanRa)
+        : 0;
+}
+
+<div class="dashboard-heading">
+    <div>
+        <h1>Báo cáo doanh thu &amp; Thống kê bán hàng</h1>
+        <p class="text-muted mb-0">Kỳ báo cáo: <strong>@Model.PeriodDescription</strong></p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="@Url.Action("ExportRevenueCsv", "Reports", new { area = "Admin", fromDate = Model.FromDate.HasValue ? Model.FromDate.Value.ToString("yyyy-MM-dd") : null, toDate = Model.ToDate.HasValue ? Model.ToDate.Value.ToString("yyyy-MM-dd") : null, period = Model.Period })"
+           class="btn btn-success btn-sm">
+            ⬇ Xuất file Excel (CSV)
+        </a>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print();">
+            🖨 In báo cáo
+        </button>
+    </div>
+</div>
+
+<!-- Bộ lọc thời gian báo cáo -->
+<section class="dashboard-panel mb-4">
+    <div class="p-3 bg-light rounded">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3">
+            <div class="btn-group btn-group-sm" role="group" aria-label="Chọn nhanh kỳ báo cáo">
+                <a href="@Url.Action("Index", new { period = "all" })" class="btn @(Model.Period == "all" ? "btn-primary" : "btn-outline-secondary")">Toàn thời gian</a>
+                <a href="@Url.Action("Index", new { period = "today" })" class="btn @(Model.Period == "today" ? "btn-primary" : "btn-outline-secondary")">Hôm nay</a>
+                <a href="@Url.Action("Index", new { period = "7days" })" class="btn @(Model.Period == "7days" ? "btn-primary" : "btn-outline-secondary")">7 ngày qua</a>
+                <a href="@Url.Action("Index", new { period = "30days" })" class="btn @(Model.Period == "30days" ? "btn-primary" : "btn-outline-secondary")">30 ngày qua</a>
+                <a href="@Url.Action("Index", new { period = "month" })" class="btn @(Model.Period == "month" ? "btn-primary" : "btn-outline-secondary")">Tháng này</a>
+                <a href="@Url.Action("Index", new { period = "year" })" class="btn @(Model.Period == "year" ? "btn-primary" : "btn-outline-secondary")">Năm nay</a>
+            </div>
+
+            @using (Html.BeginForm("Index", "Reports", new { area = "Admin" }, FormMethod.Get, new { @class = "d-flex flex-wrap align-items-end gap-2 admin-filter-form" }))
+            {
+                <div>
+                    <label class="form-label small fw-bold text-muted mb-1">Từ ngày</label>
+                    <input type="date" name="fromDate" value="@(Model.FromDate.HasValue ? Model.FromDate.Value.ToString("yyyy-MM-dd") : "")" class="form-control form-control-sm" />
+                </div>
+                <div>
+                    <label class="form-label small fw-bold text-muted mb-1">Đến ngày</label>
+                    <input type="date" name="toDate" value="@(Model.ToDate.HasValue ? Model.ToDate.Value.ToString("yyyy-MM-dd") : "")" class="form-control form-control-sm" />
+                </div>
+                <button type="submit" class="btn btn-sm btn-primary">Xem báo cáo</button>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- 4 Thẻ KPI Tổng quan -->
+<div class="stats-grid mb-4">
+    <div class="stat-card stat-blue">
+        <div class="stat-icon">$</div>
+        <div>
+            <span>Doanh thu thuần (Đơn hợp lệ)</span>
+            <strong>@Model.TotalValidRevenue.ToString("N0") đ</strong>
+            <small class="text-muted d-block mt-1">Đã giao: @Model.DeliveredRevenue.ToString("N0") đ</small>
+        </div>
+    </div>
+    <div class="stat-card stat-green">
+        <div class="stat-icon">📈</div>
+        <div>
+            <span>Lợi nhuận gộp ước tính</span>
+            <strong>@Model.EstimatedGrossProfit.ToString("N0") đ</strong>
+            <small class="text-muted d-block mt-1">Giá vốn: @Model.EstimatedCostOfGoodsSold.ToString("N0") đ</small>
+        </div>
+    </div>
+    <div class="stat-card stat-purple">
+        <div class="stat-icon">📱</div>
+        <div>
+            <span>Số lượng sản phẩm bán ra</span>
+            <strong>@Model.TotalUnitsSold sản phẩm</strong>
+            <small class="text-muted d-block mt-1">Trên @Model.ValidOrdersCount đơn hàng hợp lệ</small>
+        </div>
+    </div>
+    <div class="stat-card stat-orange">
+        <div class="stat-icon">▥</div>
+        <div>
+            <span>Tổng chi phí nhập hàng</span>
+            <strong>@Model.TotalImportCost.ToString("N0") đ</strong>
+            <small class="text-muted d-block mt-1">Đã nhập: @Model.TotalUnitsImported SP</small>
+        </div>
+    </div>
+</div>
+
+<!-- PHẦN 1: BIỂU ĐỒ DOANH THU & CƠ CẤU ĐƠN HÀNG -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <section class="dashboard-panel h-100">
+            <div class="panel-heading">
+                <div>
+                    <h2>Biểu đồ doanh thu theo ngày</h2>
+                    <p>So sánh doanh thu hợp lệ và lợi nhuận gộp qua các ngày phát sinh đơn hàng</p>
+                </div>
+                <span class="panel-badge">TB: @Model.AverageOrderValue.ToString("N0") đ / đơn</span>
+            </div>
+            <div class="p-3">
+                @if (Model.RevenueByDates == null || Model.RevenueByDates.Count == 0)
+                {
+                    <div class="empty-panel">Chưa có dữ liệu doanh thu trong khoảng thời gian này.</div>
+                }
+                else
+                {
+                    <div class="report-bars">
+                        @foreach (var d in Model.RevenueByDates.OrderBy(x => x.Ngay).Take(14))
+                        {
+                            var pct = maxDailyRev > 0 ? Math.Max(4, (int)Math.Round(d.DoanhThuHopLe * 100m / maxDailyRev)) : 4;
+                            <div class="report-bar-row">
+                                <div class="report-bar-label">
+                                    <strong>@d.Ngay.ToString("dd/MM/yyyy")</strong>
+                                    <small>@d.SoDonHang đơn • @d.SoSanPhamBan SP</small>
+                                </div>
+                                <div class="report-bar-track">
+                                    <div class="report-bar-fill" style="width: @(pct)%;"></div>
+                                </div>
+                                <div class="report-bar-value">
+                                    <strong>@d.DoanhThuHopLe.ToString("N0") đ</strong>
+                                    <small class="text-success">Lãi: @d.LoiNhuanUocTinh.ToString("N0") đ</small>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-4">
+        <section class="dashboard-panel h-100">
+            <div class="panel-heading">
+                <div>
+                    <h2>Cơ cấu trạng thái đơn hàng</h2>
+                    <p>Tổng cộng @Model.TotalOrders đơn trong kỳ</p>
+                </div>
+            </div>
+            <div class="p-3">
+                @foreach (var st in Model.StatusBreakdowns)
+                {
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center small mb-1">
+                            <span class="status-pill @AdminStatusHelper.GetOrderStatusBadgeClass(st.TrangThai)">@st.TenTrangThai</span>
+                            <span><strong>@st.SoDon đơn</strong> (@st.TyLePhanTram%) • @st.TongGiaTri.ToString("N0") đ</span>
+                        </div>
+                        <div class="progress" style="height: 7px;">
+                            <div class="progress-bar @(st.TrangThai == "DA_HUY" ? "bg-danger" : (st.TrangThai == "DA_GIAO" ? "bg-success" : "bg-primary"))"
+                                 role="progressbar"
+                                 style="width: @(st.TyLePhanTram.ToString(System.Globalization.CultureInfo.InvariantCulture))%;"></div>
+                        </div>
+                    </div>
+                }
+
+                <hr />
+                <h6 class="fw-bold small text-uppercase text-muted mb-2">Theo phương thức thanh toán</h6>
+                @foreach (var pm in Model.PaymentBreakdowns)
+                {
+                    <div class="d-flex justify-content-between align-items-center small py-1 border-bottom">
+                        <span>@pm.TenPhuongThuc (@pm.SoDon đơn)</span>
+                        <strong>@pm.DoanhThu.ToString("N0") đ (@pm.TyLePhanTram%)</strong>
+                    </div>
+                }
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- PHẦN 2: THỐNG KÊ SỐ LƯỢNG SẢN PHẨM BÁN RA -->
+<section class="dashboard-panel mb-4">
+    <div class="panel-heading">
+        <div>
+            <h2>Thống kê số lượng sản phẩm bán ra</h2>
+            <p>Xếp hạng sản phẩm theo số lượng tiêu thụ, doanh thu mang lại, lợi nhuận gộp và đối chiếu tồn kho</p>
+        </div>
+        <span class="panel-badge">@Model.TotalUnitsSold SP đã bán</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table dashboard-table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Hạng</th>
+                    <th>Sản phẩm / Biến thể</th>
+                    <th>Thương hiệu / Loại</th>
+                    <th class="text-center">Số đơn</th>
+                    <th style="width: 18%;">SL bán ra</th>
+                    <th class="text-center">SL đã giao</th>
+                    <th class="text-end">Doanh thu bán</th>
+                    <th class="text-end">Giá vốn ước tính</th>
+                    <th class="text-end">Lợi nhuận gộp</th>
+                    <th class="text-center">Tỷ trọng DT</th>
+                    <th class="text-center">Tồn kho</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int rank = 1; }
+                @foreach (var item in Model.ProductSales)
+                {
+                    var qtyPct = maxProductQty > 0 ? (int)Math.Round(item.SoLuongBanRa * 100.0 / maxProductQty) : 0;
+                    <tr>
+                        <td>
+                            <span class="badge @(rank <= 3 && item.SoLuongBanRa > 0 ? "bg-primary" : "bg-light text-dark border")">#@rank</span>
+                        </td>
+                        <td>
+                            <strong>@item.TenSanPham</strong>
+                            <small>SKU: @item.SKU • @item.CauHinh</small>
+                        </td>
+                        <td>
+                            <div>@item.TenThuongHieu</div>
+                            <small class="text-muted">@item.TenLoai</small>
+                        </td>
+                        <td class="text-center">@item.SoDonCoSanPham</td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <strong class="text-primary">@item.SoLuongBanRa SP</strong>
+                                <div class="progress flex-grow-1" style="height: 6px;">
+                                    <div class="progress-bar bg-primary" style="width: @(qtyPct)%;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center">@item.SoLuongDaGiao SP</td>
+                        <td class="text-end fw-bold">@item.DoanhThuBanRa.ToString("N0") đ</td>
+                        <td class="text-end text-muted">@item.GiaVonUocTinh.ToString("N0") đ</td>
+                        <td class="text-end fw-semibold @(item.LoiNhuanUocTinh >= 0 ? "text-success" : "text-danger")">
+                            @item.LoiNhuanUocTinh.ToString("N0") đ
+                        </td>
+                        <td class="text-center">@item.TyTrongDoanhThu%</td>
+                        <td class="text-center">
+                            <span class="status-pill @(item.SoLuongTonHienTai <= 5 ? "status-cho_xac_nhan" : "status-da_giao")">
+                                @item.SoLuongTonHienTai
+                            </span>
+                        </td>
+                    </tr>
+                    rank++;
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- PHẦN 3: THỐNG KÊ THEO THƯƠNG HIỆU, DANH MỤC & BẢNG DOANH THU CHI TIẾT -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <section class="dashboard-panel h-100">
+            <div class="panel-heading">
+                <div>
+                    <h2>Thống kê bán ra theo Thương hiệu</h2>
+                    <p>Số lượng sản phẩm và doanh thu theo hãng</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table dashboard-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Thương hiệu</th>
+                            <th class="text-center">Số lượng bán</th>
+                            <th class="text-end">Doanh thu</th>
+                            <th class="text-end">Tỷ trọng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var b in Model.BrandSales)
+                        {
+                            <tr>
+                                <td><strong>@b.TenThuongHieu</strong></td>
+                                <td class="text-center fw-bold">@b.SoLuongBanRa SP</td>
+                                <td class="text-end fw-semibold">@b.DoanhThu.ToString("N0") đ</td>
+                                <td class="text-end">@b.TyTrongDoanhThu%</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <div class="col-lg-6">
+        <section class="dashboard-panel h-100">
+            <div class="panel-heading">
+                <div>
+                    <h2>Thống kê bán ra theo Loại sản phẩm</h2>
+                    <p>Điện thoại thông minh &amp; Phụ kiện</p>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table dashboard-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Danh mục loại sản phẩm</th>
+                            <th class="text-center">Số lượng bán</th>
+                            <th class="text-end">Doanh thu</th>
+                            <th class="text-end">Tỷ trọng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model.CategorySales)
+                        {
+                            <tr>
+                                <td><strong>@c.TenLoai</strong></td>
+                                <td class="text-center fw-bold">@c.SoLuongBanRa SP</td>
+                                <td class="text-end fw-semibold">@c.DoanhThu.ToString("N0") đ</td>
+                                <td class="text-end">@c.TyTrongDoanhThu%</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- PHẦN 4: BẢNG CHI TIẾT DOANH THU THEO NGÀY & THEO THÁNG -->
+<div class="row g-4">
+    <div class="col-lg-7">
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Bảng kê doanh thu chi tiết theo ngày</h2>
+                    <p>Tổng hợp số đơn, số lượng bán, doanh thu và lợi nhuận từng ngày</p>
+                </div>
+            </div>
+            @if (Model.RevenueByDates == null || Model.RevenueByDates.Count == 0)
+            {
+                <div class="empty-panel">Chưa có dữ liệu.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table dashboard-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                <th class="text-center">Tổng đơn (Giao/Hủy)</th>
+                                <th class="text-center">SL SP</th>
+                                <th class="text-end">Doanh thu hợp lệ</th>
+                                <th class="text-end">Doanh thu đã giao</th>
+                                <th class="text-end">Lợi nhuận gộp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var d in Model.RevenueByDates)
+                            {
+                                <tr>
+                                    <td><strong>@d.Ngay.ToString("dd/MM/yyyy")</strong></td>
+                                    <td class="text-center">@d.SoDonHang (@d.SoDonDaGiao / @d.SoDonHuy)</td>
+                                    <td class="text-center">@d.SoSanPhamBan</td>
+                                    <td class="text-end fw-bold text-primary">@d.DoanhThuHopLe.ToString("N0") đ</td>
+                                    <td class="text-end">@d.DoanhThuDaGiao.ToString("N0") đ</td>
+                                    <td class="text-end fw-semibold text-success">@d.LoiNhuanUocTinh.ToString("N0") đ</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    </div>
+
+    <div class="col-lg-5">
+        <section class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <h2>Tổng hợp theo tháng</h2>
+                    <p>Đối chiếu Doanh thu bán hàng &amp; Chi phí nhập kho</p>
+                </div>
+            </div>
+            @if (Model.RevenueByMonths == null || Model.RevenueByMonths.Count == 0)
+            {
+                <div class="empty-panel">Chưa có dữ liệu theo tháng.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table dashboard-table align-middle">
+                        <thead>
+                            <tr>
+                                <th>Tháng</th>
+                                <th class="text-center">SL bán</th>
+                                <th class="text-end">Doanh thu</th>
+                                <th class="text-end">Chi phí nhập</th>
+                                <th class="text-end">Lãi gộp</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var m in Model.RevenueByMonths)
+                            {
+                                <tr>
+                                    <td><strong>@m.NhanThang</strong><small>@m.SoDonHang đơn</small></td>
+                                    <td class="text-center">@m.SoSanPhamBan SP</td>
+                                    <td class="text-end fw-bold text-primary">@m.DoanhThuHopLe.ToString("N0") đ</td>
+                                    <td class="text-end text-muted">@m.ChiPhiNhapKho.ToString("N0") đ</td>
+                                    <td class="text-end fw-semibold text-success">@m.LoiNhuanGop.ToString("N0") đ</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    </div>
+</div>
