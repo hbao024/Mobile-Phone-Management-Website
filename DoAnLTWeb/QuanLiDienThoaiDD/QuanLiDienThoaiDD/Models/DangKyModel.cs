@@ -19,7 +19,6 @@ namespace QuanLiDienThoaiDD.Models
         [RegularExpression(@"^0\d{9}$", ErrorMessage = "Số điện thoại gồm 10 số, bắt đầu bằng số 0")]
         public string DienThoai { get; set; }
 
-        [Required(ErrorMessage = "Vui lòng nhập địa chỉ")]
         public string DiaChi { get; set; }
 
         [Required(ErrorMessage = "Vui lòng nhập tên đăng nhập")]

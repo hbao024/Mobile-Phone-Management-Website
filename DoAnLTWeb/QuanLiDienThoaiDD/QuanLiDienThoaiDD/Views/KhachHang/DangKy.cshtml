@@ -1,54 +1,66 @@
 ﻿@model QuanLiDienThoaiDD.Models.DangKyModel
 @{
     ViewBag.Title = "Đăng ký";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="row justify-content-center my-4">
-    <div class="col-md-6">
-        <h3 class="mb-3">Đăng ký tài khoản</h3>
+<div class="auth-page register-page">
+    <div class="auth-card register-card">
+        <div class="auth-brand">
+            <span class="brand-mark">M</span>
+            <div>
+                <div class="brand-name">MobileHub</div>
+                <div class="brand-caption">Quản lý điện thoại di động</div>
+            </div>
+        </div>
 
-        @using (Html.BeginForm("DangKy", "KhachHang", FormMethod.Post))
+        <h1>Đăng ký tài khoản</h1>
+        <p class="text-muted">Tạo tài khoản để mua sắm và theo dõi đơn hàng dễ dàng hơn.</p>
+
+        @using (Html.BeginForm("DangKy", "KhachHang", FormMethod.Post, new { @class = "auth-form register-form" }))
         {
             @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "Đăng ký chưa thành công.", new { @class = "alert alert-danger" })
 
-            <div class="mb-2">
-                <label>Họ tên</label>
-                @Html.TextBoxFor(m => m.TenKH, new { @class = "form-control" })
-                @Html.ValidationMessageFor(m => m.TenKH, "", new { @class = "text-danger" })
-            </div>
-            <div class="mb-2">
-                <label>Email</label>
-                @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
-                @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
-            </div>
-            <div class="mb-2">
-                <label>Số điện thoại</label>
-                @Html.TextBoxFor(m => m.DienThoai, new { @class = "form-control" })
-                @Html.ValidationMessageFor(m => m.DienThoai, "", new { @class = "text-danger" })
-            </div>
-            <div class="mb-2">
-                <label>Địa chỉ</label>
-                @Html.TextBoxFor(m => m.DiaChi, new { @class = "form-control" })
-                @Html.ValidationMessageFor(m => m.DiaChi, "", new { @class = "text-danger" })
-            </div>
-            <div class="mb-2">
-                <label>Tên đăng nhập</label>
-                @Html.TextBoxFor(m => m.TenDangNhap, new { @class = "form-control" })
-                @Html.ValidationMessageFor(m => m.TenDangNhap, "", new { @class = "text-danger" })
-            </div>
-            <div class="mb-2">
-                <label>Mật khẩu</label>
-                @Html.PasswordFor(m => m.MatKhau, new { @class = "form-control" })
-                @Html.ValidationMessageFor(m => m.MatKhau, "", new { @class = "text-danger" })
-            </div>
-            <div class="mb-3">
-                <label>Nhập lại mật khẩu</label>
-                @Html.PasswordFor(m => m.NhapLaiMatKhau, new { @class = "form-control" })
-                @Html.ValidationMessageFor(m => m.NhapLaiMatKhau, "", new { @class = "text-danger" })
+            <div class="register-form-grid">
+                <div class="register-field">
+                    @Html.LabelFor(x => x.TenKH, "Họ và tên", new { @class = "form-label" })
+                    @Html.TextBoxFor(x => x.TenKH, new { @class = "form-control", autocomplete = "name", autofocus = "autofocus", placeholder = "Nguyễn Văn A" })
+                    @Html.ValidationMessageFor(x => x.TenKH, null, new { @class = "text-danger" })
+                </div>
+                <div class="register-field">
+                    @Html.LabelFor(x => x.Email, new { @class = "form-label" })
+                    @Html.TextBoxFor(x => x.Email, new { @class = "form-control", type = "email", autocomplete = "email", placeholder = "email@example.com" })
+                    @Html.ValidationMessageFor(x => x.Email, null, new { @class = "text-danger" })
+                </div>
+                <div class="register-field">
+                    @Html.LabelFor(x => x.DienThoai, "Số điện thoại", new { @class = "form-label" })
+                    @Html.TextBoxFor(x => x.DienThoai, new { @class = "form-control", type = "tel", autocomplete = "tel", placeholder = "0909 123 456" })
+                    @Html.ValidationMessageFor(x => x.DienThoai, null, new { @class = "text-danger" })
+                </div>
+                <div class="register-field">
+                    @Html.LabelFor(x => x.TenDangNhap, "Tên đăng nhập", new { @class = "form-label" })
+                    @Html.TextBoxFor(x => x.TenDangNhap, new { @class = "form-control", autocomplete = "username", placeholder = "Tên đăng nhập" })
+                    @Html.ValidationMessageFor(x => x.TenDangNhap, null, new { @class = "text-danger" })
+                </div>
+                <div class="register-field">
+                    @Html.LabelFor(x => x.MatKhau, "Mật khẩu", new { @class = "form-label" })
+                    @Html.PasswordFor(x => x.MatKhau, new { @class = "form-control", autocomplete = "new-password", placeholder = "Tối thiểu 6 ký tự" })
+                    @Html.ValidationMessageFor(x => x.MatKhau, null, new { @class = "text-danger" })
+                </div>
+                <div class="register-field">
+                    @Html.LabelFor(x => x.NhapLaiMatKhau, "Nhập lại mật khẩu", new { @class = "form-label" })
+                    @Html.PasswordFor(x => x.NhapLaiMatKhau, new { @class = "form-control", autocomplete = "new-password", placeholder = "Nhập lại mật khẩu" })
+                    @Html.ValidationMessageFor(x => x.NhapLaiMatKhau, null, new { @class = "text-danger" })
+                </div>
             </div>
 
-            <button type="submit" class="btn btn-primary">Đăng ký</button>
+            <button type="submit" class="btn btn-primary w-100 register-submit">Đăng ký</button>
         }
+
+        <p class="auth-switch"><span>Đã có tài khoản?</span> @Html.ActionLink("Đăng nhập ngay", "Login", "Account", new { area = "" }, new { @class = "auth-switch-link" })</p>
     </div>
 </div>
+
+@section scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}
