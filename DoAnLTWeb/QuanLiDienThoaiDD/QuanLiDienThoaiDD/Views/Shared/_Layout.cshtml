@@ -3,10 +3,12 @@
     int soLuongGio = ghTam == null ? 0 : ghTam.TongSLHang();
 
     string ctrl = (ViewContext.RouteData.Values["controller"] as string) ?? "";
+    string action = (ViewContext.RouteData.Values["action"] as string) ?? "";
     bool laTrangChu = ctrl == "Home";
     bool laSanPham = ctrl == "SanPham" || ctrl == "LoaiSanPham";
     bool laDonHang = ctrl == "LichSuMuaHang";
     bool laTaiKhoan = ctrl == "Account" || ctrl == "KhachHang";
+    bool laTrangXacThuc = (ctrl == "Account" && action == "Login") || (ctrl == "KhachHang" && action == "DangKy");
 }
 <!DOCTYPE html>
 <html lang="vi">
@@ -14,10 +16,22 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>@ViewBag.Title - MobileHub</title>
+    <script>
+        (function () {
+            var theme = localStorage.getItem('mobilehub_theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+        function toggleTheme() {
+            var current = document.documentElement.getAttribute('data-theme') || 'light';
+            var next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('mobilehub_theme', next);
+        }
+    </script>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
 </head>
-<body>
+<body class="@(laTrangXacThuc ? "auth-body" : "")">
 
     <nav class="navbar mobile-navbar d-none d-sm-block">
         <div class="container d-flex align-items-center">
@@ -29,7 +43,8 @@
             <ul class="navbar-nav flex-row flex-grow-1 ms-4 gap-2">
                 <li class="nav-item">@Html.ActionLink("Trang chủ", "Index", "Home", new { area = "" }, new { @class = "nav-link px-3" })</li>
                 <li class="nav-item">@Html.ActionLink("Sản phẩm", "Index", "SanPham", new { area = "" }, new { @class = "nav-link px-3" })</li>
-                <li class="nav-item"><span class="nav-link px-3 text-muted">Giới thiệu</span></li>
+                <li class="nav-item">@Html.ActionLink("Giới thiệu", "About", "Home", new { area = "" }, new { @class = "nav-link px-3" })</li>
+                <li class="nav-item">@Html.ActionLink("Liên hệ", "Contact", "Home", new { area = "" }, new { @class = "nav-link px-3" })</li>
             </ul>
 
             <form class="d-flex me-3" action="@Url.Action("TimKiem", "SanPham", new { area = "" })" method="get">
@@ -40,6 +55,12 @@
 
             <div class="d-flex align-items-center gap-2 me-3">
                 @Html.Action("_CartSummary", "GioHang", new { area = "" })
+            </div>
+
+            <button type="button" class="theme-toggle-btn me-3" onclick="toggleTheme()" aria-label="Đổi giao diện sáng/tối" title="Chuyển chế độ sáng/tối">
+                <span class="theme-icon-sun">☀️</span>
+                <span class="theme-icon-moon">🌙</span>
+            </button>
             </div>
 
             <div class="d-flex align-items-center gap-3">
@@ -83,6 +104,11 @@
                    value="@Request.QueryString["keyword"]" placeholder="Bạn muốn tìm gì?" />
             <button class="btn btn-sm btn-warning" type="submit">Tìm</button>
         </form>
+
+        <button type="button" class="theme-toggle-btn ms-1" onclick="toggleTheme()" aria-label="Đổi giao diện sáng/tối" title="Chuyển chế độ sáng/tối">
+            <span class="theme-icon-sun">☀️</span>
+            <span class="theme-icon-moon">🌙</span>
+        </button>
 
         <a class="m-cart" href="@Url.Action("XemGioHang", "GioHang", new { area = "" })" aria-label="Giỏ hàng">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5" /><circle cx="18" cy="20" r="1.5" /><path d="M2 3h3l2.6 12.4a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L21 7H6" /></svg>

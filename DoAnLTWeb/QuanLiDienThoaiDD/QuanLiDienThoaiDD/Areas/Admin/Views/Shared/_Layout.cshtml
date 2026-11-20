@@ -1,4 +1,4 @@
-@{
+﻿@{
     var currentController = (ViewContext.RouteData.Values["controller"] as string ?? string.Empty).ToLowerInvariant();
 }
 <!DOCTYPE html>
@@ -7,6 +7,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewBag.Title - MobileHub Admin</title>
+    <script>
+        (function () {
+            var theme = localStorage.getItem('mobilehub_theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+        function toggleTheme() {
+            var current = document.documentElement.getAttribute('data-theme') || 'light';
+            var next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('mobilehub_theme', next);
+        }
+    </script>
     @Styles.Render("~/Content/css")
 </head>
 <body class="admin-body">
@@ -61,6 +73,10 @@
                     <div class="topbar-title">@ViewBag.Title</div>
                 </div>
                 <div class="topbar-user">
+                    <button type="button" class="theme-toggle-btn me-2" onclick="toggleTheme()" aria-label="Đổi giao diện sáng/tối" title="Chuyển chế độ sáng/tối">
+                        <span class="theme-icon-sun">☀️</span>
+                        <span class="theme-icon-moon">🌙</span>
+                    </button>
                     <div class="user-avatar">@(User.Identity.Name.Length > 0 ? User.Identity.Name.Substring(0, 1).ToUpperInvariant() : "U")</div>
                     <div class="user-info">
                         <strong>@User.Identity.Name</strong>
