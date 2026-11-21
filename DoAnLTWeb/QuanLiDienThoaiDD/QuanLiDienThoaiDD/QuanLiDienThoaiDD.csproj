@@ -146,6 +146,7 @@
     <Compile Include="Security\PasswordService.cs" />
     <Compile Include="Data\SeedData.cs" />
     <Compile Include="ViewModels\AuthViewModels.cs" />
+    <Compile Include="ViewModels\ContactViewModel.cs" />
     <Compile Include="Areas\Admin\AdminAreaRegistration.cs" />
     <Compile Include="Areas\Admin\Controllers\DashboardController.cs" />
     <Compile Include="Areas\Admin\Controllers\CategoriesController.cs" />

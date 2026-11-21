@@ -1,9 +1,54 @@
-﻿@{
-    ViewBag.Title = "About";
+@{
+    ViewBag.Title = "Giới thiệu";
 }
-<main aria-labelledby="title">
-    <h2 id="title">@ViewBag.Title.</h2>
-    <h3>@ViewBag.Message</h3>
 
-    <p>Use this area to provide additional information.</p>
+<main class="about-page" aria-labelledby="about-title">
+    <section class="about-hero">
+        <div class="about-hero-copy">
+            <div class="eyebrow">MOBILEHUB STORE</div>
+            <h1 id="about-title">Công nghệ gần hơn,<br /><span>lựa chọn dễ dàng hơn.</span></h1>
+            <p>MobileHub là cửa hàng điện thoại di động hướng đến trải nghiệm mua sắm rõ ràng, nhanh chóng và đáng tin cậy cho mọi khách hàng.</p>
+            <div class="about-hero-actions">
+                @Html.ActionLink("Khám phá sản phẩm", "Index", "SanPham", new { area = "" }, new { @class = "btn btn-primary" })
+                @Html.ActionLink("Liên hệ với chúng tôi", "Contact", "Home", new { area = "" }, new { @class = "btn btn-outline-warm" })
+            </div>
+        </div>
+        <div class="about-hero-art" aria-hidden="true">
+            <div class="about-art-glow"></div>
+            <div class="about-phone-shape"><span class="about-phone-camera"></span></div>
+            <div class="about-art-note">Chọn đúng<br /><strong>chiếc điện thoại</strong></div>
+        </div>
+    </section>
+
+    <section class="about-story-grid">
+        <div class="about-story-card">
+            <div class="eyebrow">CÂU CHUYỆN CỦA CHÚNG TÔI</div>
+            <h2>Một nơi mua sắm dành cho người yêu công nghệ</h2>
+            <p>Chúng tôi xây dựng MobileHub với mong muốn giúp khách hàng dễ dàng tìm thấy chiếc điện thoại phù hợp với nhu cầu và ngân sách của mình.</p>
+            <p>Từ thông tin sản phẩm minh bạch, nhiều lựa chọn thương hiệu đến dịch vụ hỗ trợ tận tâm, mỗi trải nghiệm tại MobileHub đều được chăm chút từ những điều nhỏ nhất.</p>
+        </div>
+        <div class="about-values">
+            <article class="about-value-card">
+                <span class="about-value-icon">01</span>
+                <h3>Minh bạch</h3>
+                <p>Thông tin, giá bán và tình trạng sản phẩm được trình bày rõ ràng.</p>
+            </article>
+            <article class="about-value-card">
+                <span class="about-value-icon">02</span>
+                <h3>Tận tâm</h3>
+                <p>Luôn lắng nghe để tư vấn giải pháp phù hợp nhất cho bạn.</p>
+            </article>
+            <article class="about-value-card">
+                <span class="about-value-icon">03</span>
+                <h3>Tin cậy</h3>
+                <p>Đồng hành cùng khách hàng trước, trong và sau khi mua hàng.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="about-stats" aria-label="Thông tin nổi bật">
+        <div><strong>4+</strong><span>Thương hiệu phổ biến</span></div>
+        <div><strong>24/7</strong><span>Hỗ trợ trực tuyến</span></div>
+        <div><strong>100%</strong><span>Tận tâm phục vụ</span></div>
+    </section>
 </main>

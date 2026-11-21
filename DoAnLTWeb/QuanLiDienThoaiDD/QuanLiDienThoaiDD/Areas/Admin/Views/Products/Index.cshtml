@@ -1,39 +1,65 @@
 @model IEnumerable<QuanLiDienThoaiDD.Areas.Admin.ViewModels.ProductViewModel>
 @{ ViewBag.Title = "Sản phẩm"; }
-<h1>Sản phẩm</h1>
-<p>@Html.ActionLink("Xem tồn kho", "Index", "Inventory")</p>
-@using (Html.BeginForm("Index", "Products", FormMethod.Get))
-{
-    <label for="q">Mã, tên sản phẩm hoặc SKU</label>
-    @Html.TextBox("q", (string)ViewBag.Search, new { maxlength = "200" })
-    <label for="category">Loại</label>
-    @Html.DropDownList("category", (IEnumerable<SelectListItem>)ViewBag.FilterCategories, "Tất cả")
-    <label for="brand">Thương hiệu</label>
-    @Html.DropDownList("brand", (IEnumerable<SelectListItem>)ViewBag.FilterBrands, "Tất cả")
-    <label for="state">Trạng thái sản phẩm</label>
-    @Html.DropDownList("state", new SelectList(new[] { new { Value = "", Text = "Tất cả" }, new { Value = "active", Text = "Đang kinh doanh" }, new { Value = "inactive", Text = "Ngừng kinh doanh" } }, "Value", "Text", (string)ViewBag.State))
-    <label for="sort">Sắp xếp</label>
-    @Html.DropDownList("sort", new SelectList(new[] { new { Value = "name", Text = "Tên A–Z" }, new { Value = "name_desc", Text = "Tên Z–A" }, new { Value = "newest", Text = "Ngày tạo mới nhất" }, new { Value = "oldest", Text = "Ngày tạo cũ nhất" }, new { Value = "code", Text = "Mã sản phẩm" } }, "Value", "Text", (string)ViewBag.Sort))
-    <button type="submit" class="btn btn-primary">Tìm / lọc</button>
-    @Html.ActionLink("Xóa bộ lọc", "Index")
-}
+<div class="products-page">
+    <div class="products-heading">
+        <div>
+            <div class="topbar-eyebrow">QUẢN LÝ DANH MỤC</div>
+            <h1>Sản phẩm</h1>
+            <p class="products-heading-link">@Html.ActionLink("Xem tồn kho", "Index", "Inventory", null, new { @class = "btn btn-outline-warm" })</p>
+        </div>
+        @Html.ActionLink("+ Thêm sản phẩm", "Create", null, new { @class = "btn btn-primary products-add-button" })
+    </div>
+
+    <div class="product-filter-card">
+        @using (Html.BeginForm("Index", "Products", FormMethod.Get, new { @class = "product-filter-form" }))
+        {
+            <div class="product-filter-grid">
+                <div class="product-filter-field product-filter-search">
+                    <label for="q">Mã, tên sản phẩm hoặc SKU</label>
+                    @Html.TextBox("q", (string)ViewBag.Search, new { maxlength = "200", @class = "form-control", placeholder = "Nhập từ khóa..." })
+                </div>
+                <div class="product-filter-field">
+                    <label for="category">Loại</label>
+                    @Html.DropDownList("category", (IEnumerable<SelectListItem>)ViewBag.FilterCategories, "Tất cả", new { @class = "form-select" })
+                </div>
+                <div class="product-filter-field">
+                    <label for="brand">Thương hiệu</label>
+                    @Html.DropDownList("brand", (IEnumerable<SelectListItem>)ViewBag.FilterBrands, "Tất cả", new { @class = "form-select" })
+                </div>
+                <div class="product-filter-field">
+                    <label for="state">Trạng thái sản phẩm</label>
+                    @Html.DropDownList("state", new SelectList(new[] { new { Value = "", Text = "Tất cả" }, new { Value = "active", Text = "Đang kinh doanh" }, new { Value = "inactive", Text = "Ngừng kinh doanh" } }, "Value", "Text", (string)ViewBag.State), new { @class = "form-select" })
+                </div>
+                <div class="product-filter-field">
+                    <label for="sort">Sắp xếp</label>
+                    @Html.DropDownList("sort", new SelectList(new[] { new { Value = "name", Text = "Tên A–Z" }, new { Value = "name_desc", Text = "Tên Z–A" }, new { Value = "newest", Text = "Ngày tạo mới nhất" }, new { Value = "oldest", Text = "Ngày tạo cũ nhất" }, new { Value = "code", Text = "Mã sản phẩm" } }, "Value", "Text", (string)ViewBag.Sort), new { @class = "form-select" })
+                </div>
+            </div>
+            <div class="product-filter-actions">
+                <button type="submit" class="btn btn-primary">Tìm / lọc</button>
+                @Html.ActionLink("Xóa bộ lọc", "Index", null, new { @class = "btn btn-outline-warm" })
+            </div>
+        }
+    </div>
+
 @if (ViewBag.Adjusted) { <p role="status">Tham số trang hoặc sắp xếp/trạng thái không hợp lệ đã được điều chỉnh.</p> }
-<p>@ViewBag.Total sản phẩm. Trang @ViewBag.Page / @ViewBag.Pages.</p>
 @if (TempData["ProductSuccess"] != null)
 { <div class="alert alert-success" role="status">@TempData["ProductSuccess"]</div> }
-<p>@Html.ActionLink("Thêm sản phẩm", "Create", null, new { @class = "btn btn-primary" })</p>
-<p>Chọn Chỉnh sửa để ngừng kinh doanh. Sản phẩm và các biến thể được giữ lại.</p>
-<div class="table-responsive">
-<table class="table table-striped">
+<div class="products-toolbar">
+    <p class="products-count">@ViewBag.Total sản phẩm <span>·</span> Trang @ViewBag.Page / @ViewBag.Pages</p>
+    <p class="products-hint">Chọn <strong>Chỉnh sửa</strong> để ngừng kinh doanh. Sản phẩm và các biến thể được giữ lại.</p>
+</div>
+<div class="table-responsive product-table-wrap">
+<table class="table table-striped product-table">
     <caption>Sản phẩm đang và ngừng kinh doanh</caption>
     <thead><tr><th scope="col">Mã</th><th scope="col">Tên</th><th scope="col">Mã loại</th><th scope="col">Mã thương hiệu</th><th scope="col">Mã NCC mặc định</th><th scope="col">Bảo hành (tháng)</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead>
     <tbody>
     @foreach (var item in Model)
     {
         <tr>
-            <td>@item.MaSanPham</td><td>@item.TenSanPham</td><td>@item.MaLoai</td><td>@item.MaThuongHieu</td><td>@item.MaNCCMacDinh</td><td>@item.BaoHanhThang</td>
-            <td>@(item.TrangThai ? "Đang kinh doanh" : "Ngừng kinh doanh")</td>
-            <td>@Html.ActionLink("Chỉnh sửa", "Edit", new { id = item.MaSanPham }) |
+            <td class="product-code">@item.MaSanPham</td><td class="product-name">@item.TenSanPham</td><td>@item.MaLoai</td><td>@item.MaThuongHieu</td><td>@item.MaNCCMacDinh</td><td>@item.BaoHanhThang</td>
+            <td><span class="product-status @(item.TrangThai ? "is-active" : "is-inactive")">@(item.TrangThai ? "Đang kinh doanh" : "Ngừng kinh doanh")</span></td>
+            <td class="product-actions">@Html.ActionLink("Chỉnh sửa", "Edit", new { id = item.MaSanPham }) |
                 @Html.ActionLink("Biến thể", "Index", "ProductVariants", new { area = "Admin", productId = item.MaSanPham }, null)</td>
         </tr>
     }
@@ -53,3 +79,4 @@
     @Html.ActionLink("Cuối", "Index", new { q = (string)ViewBag.Search, category = (string)ViewBag.Category, brand = (string)ViewBag.Brand, state = (string)ViewBag.State, sort = (string)ViewBag.Sort, page = (int)ViewBag.Pages })
 }
 </nav>
+</div>

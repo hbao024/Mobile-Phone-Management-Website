@@ -1,19 +1,95 @@
-﻿@{
-    ViewBag.Title = "Contact";
+@model QuanLiDienThoaiDD.ViewModels.ContactViewModel
+@{
+    ViewBag.Title = "Liên hệ";
 }
-<main aria-labelledby="title">
-    <h2 id="title">@ViewBag.Title.</h2>
-    <h3>@ViewBag.Message</h3>
 
-    <address>
-        One Microsoft Way<br />
-        Redmond, WA 98052-6399<br />
-        <abbr title="Phone">P:</abbr>
-        425.555.0100
-    </address>
+<main class="contact-page" aria-labelledby="contact-title">
+    <section class="contact-intro">
+        <div class="eyebrow">MOBILEHUB SUPPORT</div>
+        <h1 id="contact-title">Chúng tôi luôn sẵn sàng<br /><span>lắng nghe bạn.</span></h1>
+        <p>Cần tư vấn sản phẩm, hỗ trợ đơn hàng hoặc có góp ý cho MobileHub? Hãy để lại thông tin, chúng tôi sẽ phản hồi sớm nhất.</p>
+    </section>
 
-    <address>
-        <strong>Support:</strong>   <a href="mailto:Support@example.com">Support@example.com</a><br />
-        <strong>Marketing:</strong> <a href="mailto:Marketing@example.com">Marketing@example.com</a>
-    </address>
+    <div class="contact-layout">
+        <aside class="contact-info-card">
+            <div class="contact-card-heading">
+                <span class="contact-card-kicker">THÔNG TIN CỬA HÀNG</span>
+                <h2>Ghé thăm hoặc gọi cho chúng tôi</h2>
+            </div>
+            <div class="contact-info-list">
+                <div class="contact-info-item">
+                    <span class="contact-info-icon">⌖</span>
+                    <div><strong>Địa chỉ</strong><p>140 Lê Trọng Tấn, Tây Thạnh, TP. Hồ Chí Minh</p></div>
+                </div>
+                <div class="contact-info-item">
+                    <span class="contact-info-icon">☎</span>
+                    <div><strong>Điện thoại</strong><p><a href="tel:0909123456">0909 123 456</a></p></div>
+                </div>
+                <div class="contact-info-item">
+                    <span class="contact-info-icon">✉</span>
+                    <div><strong>Email</strong><p><a href="mailto:hello@mobilehub.vn">hello@mobilehub.vn</a></p></div>
+                </div>
+                <div class="contact-info-item">
+                    <span class="contact-info-icon">◷</span>
+                    <div><strong>Giờ mở cửa</strong><p>Thứ 2 – Chủ nhật<br />08:00 – 21:00</p></div>
+                </div>
+            </div>
+            <div class="contact-map-placeholder">
+                <span>⌖</span>
+                <strong>MobileHub Store</strong>
+                <small>140 Lê Trọng Tấn, Tây Thạnh, TP. Hồ Chí Minh</small>
+            </div>
+        </aside>
+
+        <section class="contact-form-card">
+            <div class="contact-card-heading">
+                <span class="contact-card-kicker">GỬI TIN NHẮN</span>
+                <h2>Bạn cần chúng tôi hỗ trợ?</h2>
+            </div>
+            @if (TempData["ContactSuccess"] != null)
+            {
+                <div class="alert alert-success" role="status">@TempData["ContactSuccess"]</div>
+            }
+            @using (Html.BeginForm("Contact", "Home", FormMethod.Post, new { @class = "contact-form" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "Vui lòng kiểm tra lại thông tin.", new { @class = "text-danger" })
+                <div class="contact-form-grid">
+                    <div class="contact-field">
+                        @Html.LabelFor(m => m.HoTen)
+                        @Html.TextBoxFor(m => m.HoTen, new { @class = "form-control", placeholder = "Nguyễn Văn A" })
+                        @Html.ValidationMessageFor(m => m.HoTen, null, new { @class = "text-danger" })
+                    </div>
+                    <div class="contact-field">
+                        @Html.LabelFor(m => m.Email)
+                        @Html.TextBoxFor(m => m.Email, new { @class = "form-control", type = "email", placeholder = "email@example.com" })
+                        @Html.ValidationMessageFor(m => m.Email, null, new { @class = "text-danger" })
+                    </div>
+                    <div class="contact-field contact-field-full">
+                        @Html.LabelFor(m => m.SoDienThoai)
+                        @Html.TextBoxFor(m => m.SoDienThoai, new { @class = "form-control", placeholder = "0909 123 456" })
+                        @Html.ValidationMessageFor(m => m.SoDienThoai, null, new { @class = "text-danger" })
+                    </div>
+                    <div class="contact-field contact-field-full">
+                        @Html.LabelFor(m => m.NoiDung)
+                        @Html.TextAreaFor(m => m.NoiDung, 5, 40, new { @class = "form-control", placeholder = "Hãy chia sẻ điều bạn đang cần hỗ trợ..." })
+                        @Html.ValidationMessageFor(m => m.NoiDung, null, new { @class = "text-danger" })
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary contact-submit">Gửi liên hệ</button>
+            }
+        </section>
+    </div>
+
+    <section class="contact-map-section" aria-labelledby="map-title">
+        <div class="contact-map-copy">
+            <span class="contact-card-kicker">BẢN ĐỒ CỬA HÀNG CHÍNH</span>
+            <h2 id="map-title">Ghé trực tiếp để được hỗ trợ nhanh hơn</h2>
+            <p>Bạn có thể đến MobileHub tại 140 Lê Trọng Tấn, Tây Thạnh, TP. Hồ Chí Minh để được tư vấn và trải nghiệm sản phẩm.</p>
+            <a class="btn btn-outline-warm" href="https://www.google.com/maps/search/?api=1&amp;query=140+Le+Trong+Tan%2C+Tay+Thanh%2C+Ho+Chi+Minh" target="_blank" rel="noopener">Mở trong Google Maps ↗</a>
+        </div>
+        <div class="contact-map-frame">
+            <iframe title="Bản đồ MobileHub tại 140 Lê Trọng Tấn" loading="lazy" src="https://www.google.com/maps?q=140+Le+Trong+Tan%2C+Tay+Thanh%2C+Ho+Chi+Minh&amp;output=embed" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+    </section>
 </main>

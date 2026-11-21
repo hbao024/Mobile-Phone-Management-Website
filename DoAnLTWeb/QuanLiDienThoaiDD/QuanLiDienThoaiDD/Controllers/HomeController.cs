@@ -31,7 +31,18 @@ namespace QuanLiDienThoaiDD.Controllers
         public ActionResult Contact()
         {
             ViewBag.Message = "Liên hệ";
-            return View();
+            return View(new ContactViewModel());
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public ActionResult Contact(ContactViewModel model)
+        {
+            ViewBag.Message = "Liên hệ";
+            if (!ModelState.IsValid)
+                return View(model);
+
+            TempData["ContactSuccess"] = "Cảm ơn bạn đã liên hệ. MobileHub sẽ phản hồi trong thời gian sớm nhất.";
+            return RedirectToAction("Contact");
         }
     }
 }
